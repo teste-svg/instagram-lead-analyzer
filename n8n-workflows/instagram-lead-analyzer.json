@@ -1,0 +1,299 @@
+{
+  "name": "Instagram Lead Analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-analyzer",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "operation": "equals",
+              "value2": "test_connection"
+            }
+          ]
+        }
+      },
+      "id": "check-action",
+      "name": "Check Action",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "connected"
+            },
+            {
+              "name": "message",
+              "value": "Conexão estabelecida com sucesso!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "test-response",
+      "name": "Test Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract username from input\nconst username = $input.first().json.username;\nconst url = $input.first().json.url;\nconst trainingData = $input.first().json.training_data || {};\n\nreturn {\n  json: {\n    username,\n    url,\n    trainingData,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "prepare-data",
+      "name": "Prepare Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.instagram.com/api/v1/users/web_profile_info/?username={{ $json.username }}",
+        "options": {
+          "headers": {
+            "values": [
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+              },
+              {
+                "name": "X-IG-App-ID",
+                "value": "936619743392459"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fetch-instagram",
+      "name": "Fetch Instagram Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 400],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse Instagram response\nconst data = $input.first().json;\nconst trainingData = $('Prepare Data').first().json.trainingData;\n\nlet profile = {};\n\nif (data.data && data.data.user) {\n  const user = data.data.user;\n  \n  profile = {\n    username: user.username,\n    full_name: user.full_name,\n    bio: user.biography,\n    followers: formatNumber(user.edge_followed_by?.count),\n    following: formatNumber(user.edge_follow?.count),\n    posts: formatNumber(user.edge_owner_to_timeline_media?.count),\n    profile_pic: user.profile_pic_url_hd || user.profile_pic_url,\n    is_verified: user.is_verified,\n    is_business: user.is_business_account,\n    is_private: user.is_private,\n    category: user.category_name || user.business_category_name,\n    website: user.external_url\n  };\n} else {\n  // Fallback for when API fails\n  profile = {\n    username: $('Prepare Data').first().json.username,\n    full_name: 'Nome não disponível',\n    bio: 'Bio não disponível',\n    followers: '0',\n    following: '0',\n    posts: '0',\n    profile_pic: '',\n    is_verified: false,\n    is_business: false,\n    is_private: true,\n    category: null,\n    website: null\n  };\n}\n\nfunction formatNumber(num) {\n  if (!num) return '0';\n  if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + 'M';\n  if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';\n  return num.toString();\n}\n\nreturn {\n  json: {\n    profile,\n    trainingData\n  }\n};"
+      },
+      "id": "parse-profile",
+      "name": "Parse Profile Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "messages": {
+          "values": [
+            {
+              "content": "=Você é um especialista em vendas consultivas. Analise este perfil do Instagram e gere estratégias de abordagem.\n\nPERFIL:\n- Username: @{{ $json.profile.username }}\n- Nome: {{ $json.profile.full_name }}\n- Bio: {{ $json.profile.bio }}\n- Seguidores: {{ $json.profile.followers }}\n- Categoria: {{ $json.profile.category }}\n- Website: {{ $json.profile.website }}\n\nCONTEXTO DO VENDEDOR:\n{{ JSON.stringify($json.trainingData) }}\n\nGere em JSON:\n1. photo_analysis (string): análise da presença digital\n2. connection_points (array): 5 pontos de conexão\n3. sales_opportunities (array): 4 oportunidades\n4. approach_script (string HTML): roteiro de 4 mensagens\n5. conversation_guide (string HTML): guia de conversa\n6. executive_summary (string HTML): resumo executivo",
+              "role": "user"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 3000
+        }
+      },
+      "id": "openai-analyze",
+      "name": "OpenAI Analysis",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [1250, 400],
+      "credentials": {
+        "openAiApi": {
+          "id": "your-openai-credential-id",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Combine profile and analysis\nconst profile = $('Parse Profile Data').first().json.profile;\nconst analysisRaw = $input.first().json.message?.content || $input.first().json.text;\n\nlet analysis;\ntry {\n  // Try to parse JSON from the response\n  const jsonMatch = analysisRaw.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    analysis = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found');\n  }\n} catch (e) {\n  // Fallback analysis\n  analysis = {\n    photo_analysis: 'Análise baseada nos dados do perfil disponíveis.',\n    connection_points: [\n      'Presença ativa no Instagram',\n      'Potencial interesse em networking',\n      'Abertura para novas conexões'\n    ],\n    sales_opportunities: [\n      'Potencial para produtos/serviços digitais',\n      'Interesse em crescimento profissional'\n    ],\n    approach_script: '<h4>Abordagem Sugerida</h4><p>Inicie com elogio genuíno ao conteúdo.</p>',\n    conversation_guide: '<h4>Guia</h4><ul><li>Construa rapport primeiro</li></ul>',\n    executive_summary: '<p>Lead com potencial. Abordagem consultiva recomendada.</p>'\n  };\n}\n\nreturn {\n  json: {\n    profile,\n    photo_analysis: analysis.photo_analysis,\n    connection_points: analysis.connection_points,\n    sales_opportunities: analysis.sales_opportunities,\n    approach_script: analysis.approach_script,\n    conversation_guide: analysis.conversation_guide,\n    executive_summary: analysis.executive_summary\n  }\n};"
+      },
+      "id": "combine-results",
+      "name": "Combine Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-test",
+      "name": "Respond Test",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 200]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Action": {
+      "main": [
+        [
+          {
+            "node": "Test Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Fetch Instagram Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Instagram Profile": {
+      "main": [
+        [
+          {
+            "node": "Parse Profile Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Profile Data": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Combine Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Results": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "Instagram",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "name": "Lead Generation",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "triggerCount": 0,
+  "versionId": "1"
+}
