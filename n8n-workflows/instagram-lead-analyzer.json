@@ -127,36 +127,39 @@
     },
     {
       "parameters": {
-        "resource": "chat",
-        "model": "gpt-4o",
-        "messages": {
-          "values": [
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "content": "=Você é um especialista em vendas consultivas e análise de leads no Instagram. Analise este perfil e gere estratégias de abordagem personalizadas.\n\nPERFIL DO LEAD:\n- Username: @{{ $json.profile.username }}\n- Nome: {{ $json.profile.full_name }}\n- Bio: {{ $json.profile.bio }}\n- Seguidores: {{ $json.profile.followers }}\n- Seguindo: {{ $json.profile.following }}\n- Posts: {{ $json.profile.posts }}\n- Categoria: {{ $json.profile.category }}\n- Website: {{ $json.profile.website }}\n- Verificado: {{ $json.profile.is_verified }}\n- Conta Business: {{ $json.profile.is_business }}\n\nCONFIGURAÇÕES DO VENDEDOR:\n{{ JSON.stringify($json.trainingData) }}\n\nGere uma análise completa em formato JSON com:\n\n1. \"photo_analysis\": Uma análise textual da presença digital do perfil (2-3 frases)\n\n2. \"connection_points\": Array com 5-6 pontos de conexão para criar rapport (strings)\n\n3. \"sales_opportunities\": Array com 4-5 oportunidades de venda identificadas (strings)\n\n4. \"approach_script\": String HTML com roteiro de abordagem contendo 4 mensagens progressivas. Use tags <h4> para títulos e <div class=\"message-example\"> para exemplos de mensagens.\n\n5. \"conversation_guide\": String HTML com guia de conversa em fases. Use <h4> para títulos de fase e <ul><li> para pontos.\n\n6. \"executive_summary\": String HTML com resumo executivo. Use <p> para parágrafos e inclua uma <div class=\"key-points\"> com <h5> e <ul><li> para pontos-chave.\n\nIMPORTANTE: \n- Adapte o tom e estilo conforme as configurações do vendedor\n- Seja específico e prático, não genérico\n- Responda APENAS com o JSON válido, sem texto adicional"
+              "name": "x-api-key",
+              "value": "={{ $env.ANTHROPIC_API_KEY }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
             }
           ]
         },
-        "options": {
-          "temperature": 0.7,
-          "maxTokens": 3000,
-          "responseFormat": "json_object"
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 4000,\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Você é um especialista em vendas consultivas e análise de leads no Instagram. Analise este perfil e gere estratégias de abordagem personalizadas.\\n\\nPERFIL DO LEAD:\\n- Username: @{{ $json.profile.username }}\\n- Nome: {{ $json.profile.full_name }}\\n- Bio: {{ $json.profile.bio }}\\n- Seguidores: {{ $json.profile.followers }}\\n- Seguindo: {{ $json.profile.following }}\\n- Posts: {{ $json.profile.posts }}\\n- Categoria: {{ $json.profile.category }}\\n- Website: {{ $json.profile.website }}\\n- Verificado: {{ $json.profile.is_verified }}\\n- Conta Business: {{ $json.profile.is_business }}\\n\\nCONFIGURAÇÕES DO VENDEDOR:\\n{{ JSON.stringify($json.trainingData) }}\\n\\nGere uma análise completa em formato JSON com:\\n\\n1. \\\"photo_analysis\\\": Uma análise textual da presença digital do perfil (2-3 frases)\\n\\n2. \\\"connection_points\\\": Array com 5-6 pontos de conexão para criar rapport (strings)\\n\\n3. \\\"sales_opportunities\\\": Array com 4-5 oportunidades de venda identificadas (strings)\\n\\n4. \\\"approach_script\\\": String HTML com roteiro de abordagem contendo 4 mensagens progressivas. Use tags <h4> para títulos e <div class=\\\"message-example\\\"> para exemplos de mensagens.\\n\\n5. \\\"conversation_guide\\\": String HTML com guia de conversa em fases. Use <h4> para títulos de fase e <ul><li> para pontos.\\n\\n6. \\\"executive_summary\\\": String HTML com resumo executivo. Use <p> para parágrafos e inclua uma <div class=\\\"key-points\\\"> com <h5> e <ul><li> para pontos-chave.\\n\\nIMPORTANTE:\\n- Adapte o tom e estilo conforme as configurações do vendedor\\n- Seja específico e prático, não genérico\\n- Responda APENAS com o JSON válido, sem texto adicional\"\n    }\n  ]\n}",
+        "options": {}
       },
-      "id": "openai-analyze",
-      "name": "OpenAI Analysis",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
-      "position": [1250, 400],
-      "credentials": {
-        "openAiApi": {
-          "id": "your-openai-credential-id",
-          "name": "OpenAI API"
-        }
-      }
+      "id": "claude-analyze",
+      "name": "Claude Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 400]
     },
     {
       "parameters": {
-        "jsCode": "// Combine profile and analysis\nconst profile = $('Parse Profile Data').first().json.profile;\nconst openaiResponse = $input.first().json;\n\nlet analysis;\ntry {\n  // Try to get content from OpenAI response\n  let content = openaiResponse.message?.content || openaiResponse.text || openaiResponse.content || JSON.stringify(openaiResponse);\n  \n  // If content is already an object, use it directly\n  if (typeof content === 'object') {\n    analysis = content;\n  } else {\n    // Try to parse JSON from string\n    const jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      analysis = JSON.parse(jsonMatch[0]);\n    } else {\n      throw new Error('No JSON found');\n    }\n  }\n} catch (e) {\n  // Fallback analysis\n  analysis = {\n    photo_analysis: `Análise do perfil @${profile.username}: Presença digital ativa com ${profile.followers} seguidores. O perfil demonstra engajamento consistente com ${profile.posts} publicações.`,\n    connection_points: [\n      `Perfil @${profile.username} com presença ativa no Instagram`,\n      profile.bio ? `Bio menciona: \"${profile.bio.substring(0, 50)}...\"` : 'Oportunidade de conhecer mais sobre o perfil',\n      `${profile.followers} seguidores indicam influência no nicho`,\n      profile.is_business ? 'Conta business - potencial profissional identificado' : 'Conta pessoal com potencial de crescimento',\n      profile.website ? `Website disponível para análise adicional` : 'Sem website - oportunidade de oferecer presença digital'\n    ],\n    sales_opportunities: [\n      'Potencial interesse em crescimento de presença digital',\n      'Possível necessidade de ferramentas de produtividade',\n      'Abertura para networking profissional',\n      'Interesse em conteúdo educacional do nicho'\n    ],\n    approach_script: `<h4>1. Primeira Mensagem (Quebra-gelo)</h4><p>Objetivo: Criar conexão genuína</p><div class=\"message-example\">\"Oi ${profile.full_name}! Vi seu perfil e achei muito interessante. ${profile.bio ? 'Curti seu posicionamento sobre ' + profile.bio.substring(0, 30) + '...' : 'Gostei do seu conteúdo!'} Posso te fazer uma pergunta rápida?\"</div><h4>2. Segunda Mensagem</h4><p>Objetivo: Identificar necessidades</p><div class=\"message-example\">\"Legal! E como está sendo sua jornada? Quais os maiores desafios que você tem enfrentado atualmente?\"</div><h4>3. Terceira Mensagem</h4><p>Objetivo: Apresentar valor</p><div class=\"message-example\">\"Entendo totalmente! Passei por algo muito parecido. Descobri algumas estratégias que me ajudaram demais. Posso compartilhar com você?\"</div><h4>4. Quarta Mensagem</h4><p>Objetivo: Propor próximo passo</p><div class=\"message-example\">\"Que bom que faz sentido pra você! Que tal a gente marcar uma call rápida de 15min pra eu te mostrar em detalhe? Sem compromisso nenhum.\"</div>`,\n    conversation_guide: `<h4>Fase 1: Rapport (1-2 mensagens)</h4><ul><li>Mencione algo específico do perfil dele</li><li>Faça uma pergunta aberta sobre a jornada</li><li>Demonstre interesse genuíno, não venda</li></ul><h4>Fase 2: Descoberta (2-3 mensagens)</h4><ul><li>Identifique as principais dores e desafios</li><li>Entenda o momento atual do negócio/vida</li><li>Mapeie prioridades e urgências</li></ul><h4>Fase 3: Conexão (1-2 mensagens)</h4><ul><li>Compartilhe uma experiência similar sua</li><li>Posicione-se como aliado, não vendedor</li><li>Crie curiosidade sobre sua solução</li></ul><h4>Fase 4: Apresentação (2-3 mensagens)</h4><ul><li>Peça permissão antes de apresentar</li><li>Foque nos benefícios, não nas features</li><li>Ofereça próximo passo de baixo compromisso</li></ul>`,\n    executive_summary: `<p><strong>Perfil:</strong> @${profile.username} apresenta potencial para abordagem comercial. Com ${profile.followers} seguidores e ${profile.posts} publicações, demonstra presença ativa na plataforma.</p><p><strong>Estratégia Recomendada:</strong> Abordagem consultiva focada em agregar valor antes de apresentar qualquer oferta. Construir relacionamento genuíno através de interesse real pelo trabalho/conteúdo do lead.</p><div class=\"key-points\"><h5>Pontos-Chave para Sucesso</h5><ul><li>Personalizar abordagem com dados específicos do perfil</li><li>Construir relacionamento antes de tentar vender</li><li>Identificar dores específicas durante a conversa</li><li>Oferecer valor genuíno primeiro</li><li>Ser paciente - vendas consultivas levam tempo</li></ul></div>`\n  };\n}\n\nreturn {\n  json: {\n    profile,\n    photo_analysis: analysis.photo_analysis,\n    connection_points: analysis.connection_points,\n    sales_opportunities: analysis.sales_opportunities,\n    approach_script: analysis.approach_script,\n    conversation_guide: analysis.conversation_guide,\n    executive_summary: analysis.executive_summary\n  }\n};"
+        "jsCode": "// Combine profile and analysis\nconst profile = $('Parse Profile Data').first().json.profile;\nconst claudeResponse = $input.first().json;\n\nlet analysis;\ntry {\n  // Get content from Claude response\n  let content = claudeResponse.content?.[0]?.text || '';\n  \n  // Try to parse JSON from string\n  const jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    analysis = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (e) {\n  // Fallback analysis\n  analysis = {\n    photo_analysis: `Análise do perfil @${profile.username}: Presença digital ativa com ${profile.followers} seguidores. O perfil demonstra engajamento consistente com ${profile.posts} publicações.`,\n    connection_points: [\n      `Perfil @${profile.username} com presença ativa no Instagram`,\n      profile.bio ? `Bio menciona: \"${profile.bio.substring(0, 50)}...\"` : 'Oportunidade de conhecer mais sobre o perfil',\n      `${profile.followers} seguidores indicam influência no nicho`,\n      profile.is_business ? 'Conta business - potencial profissional identificado' : 'Conta pessoal com potencial de crescimento',\n      profile.website ? `Website disponível para análise adicional` : 'Sem website - oportunidade de oferecer presença digital'\n    ],\n    sales_opportunities: [\n      'Potencial interesse em crescimento de presença digital',\n      'Possível necessidade de ferramentas de produtividade',\n      'Abertura para networking profissional',\n      'Interesse em conteúdo educacional do nicho'\n    ],\n    approach_script: `<h4>1. Primeira Mensagem (Quebra-gelo)</h4><p>Objetivo: Criar conexão genuína</p><div class=\"message-example\">\"Oi ${profile.full_name}! Vi seu perfil e achei muito interessante. ${profile.bio ? 'Curti seu posicionamento sobre ' + profile.bio.substring(0, 30) + '...' : 'Gostei do seu conteúdo!'} Posso te fazer uma pergunta rápida?\"</div><h4>2. Segunda Mensagem</h4><p>Objetivo: Identificar necessidades</p><div class=\"message-example\">\"Legal! E como está sendo sua jornada? Quais os maiores desafios que você tem enfrentado atualmente?\"</div><h4>3. Terceira Mensagem</h4><p>Objetivo: Apresentar valor</p><div class=\"message-example\">\"Entendo totalmente! Passei por algo muito parecido. Descobri algumas estratégias que me ajudaram demais. Posso compartilhar com você?\"</div><h4>4. Quarta Mensagem</h4><p>Objetivo: Propor próximo passo</p><div class=\"message-example\">\"Que bom que faz sentido pra você! Que tal a gente marcar uma call rápida de 15min pra eu te mostrar em detalhe? Sem compromisso nenhum.\"</div>`,\n    conversation_guide: `<h4>Fase 1: Rapport (1-2 mensagens)</h4><ul><li>Mencione algo específico do perfil dele</li><li>Faça uma pergunta aberta sobre a jornada</li><li>Demonstre interesse genuíno, não venda</li></ul><h4>Fase 2: Descoberta (2-3 mensagens)</h4><ul><li>Identifique as principais dores e desafios</li><li>Entenda o momento atual do negócio/vida</li><li>Mapeie prioridades e urgências</li></ul><h4>Fase 3: Conexão (1-2 mensagens)</h4><ul><li>Compartilhe uma experiência similar sua</li><li>Posicione-se como aliado, não vendedor</li><li>Crie curiosidade sobre sua solução</li></ul><h4>Fase 4: Apresentação (2-3 mensagens)</h4><ul><li>Peça permissão antes de apresentar</li><li>Foque nos benefícios, não nas features</li><li>Ofereça próximo passo de baixo compromisso</li></ul>`,\n    executive_summary: `<p><strong>Perfil:</strong> @${profile.username} apresenta potencial para abordagem comercial. Com ${profile.followers} seguidores e ${profile.posts} publicações, demonstra presença ativa na plataforma.</p><p><strong>Estratégia Recomendada:</strong> Abordagem consultiva focada em agregar valor antes de apresentar qualquer oferta. Construir relacionamento genuíno através de interesse real pelo trabalho/conteúdo do lead.</p><div class=\"key-points\"><h5>Pontos-Chave para Sucesso</h5><ul><li>Personalizar abordagem com dados específicos do perfil</li><li>Construir relacionamento antes de tentar vender</li><li>Identificar dores específicas durante a conversa</li><li>Oferecer valor genuíno primeiro</li><li>Ser paciente - vendas consultivas levam tempo</li></ul></div>`\n  };\n}\n\nreturn {\n  json: {\n    profile,\n    photo_analysis: analysis.photo_analysis,\n    connection_points: analysis.connection_points,\n    sales_opportunities: analysis.sales_opportunities,\n    approach_script: analysis.approach_script,\n    conversation_guide: analysis.conversation_guide,\n    executive_summary: analysis.executive_summary\n  }\n};"
       },
       "id": "combine-results",
       "name": "Combine Results",
@@ -282,14 +285,14 @@
       "main": [
         [
           {
-            "node": "OpenAI Analysis",
+            "node": "Claude Analysis",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OpenAI Analysis": {
+    "Claude Analysis": {
       "main": [
         [
           {
@@ -318,5 +321,5 @@
   "staticData": null,
   "tags": [],
   "triggerCount": 0,
-  "versionId": "2"
+  "versionId": "3"
 }
