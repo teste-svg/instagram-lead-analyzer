@@ -1,0 +1,184 @@
+{
+  "name": "VERSÃO APIFY",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-5-20250929",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-5-20250929"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={\n  \"photo_analysis\": \"Descrição da análise da foto...\",\n  \"connection_points\": [\"Ponto 1\", \"Ponto 2\", \"Ponto 3\"],\n  \"sales_opportunities\": [\"Oportunidade 1\", \"Oportunidade 2\"],\n  \"approach_script\": [\n    {\"step\": 1, \"message\": \"Primeira mensagem...\"},\n    {\"step\": 2, \"message\": \"Segunda mensagem...\"}\n  ],\n  \"conversation_guide\": \"Guia detalhado de conversa...\",\n  \"executive_summary\": \"Resumo executivo do lead...\"\n}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 3000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        272,
+        1008
+      ],
+      "id": "982aa3c9-9f4b-432e-9281-69815ce5d3b3",
+      "name": "Message a model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "3H2nZu0lX3meAQp7",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "social-selling",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "62ea0741-487a-4c58-960f-901fc216f0a2",
+      "name": "Webhook - Recebe Perfil",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        1008
+      ],
+      "webhookId": "948115f0-112b-4fdd-92cc-64310790faae"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "dSCLg0C3YEZ83HzYX",
+          "mode": "list",
+          "cachedResultName": "Instagram Profile Scraper (apify/instagram-profile-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/dSCLg0C3YEZ83HzYX/input"
+        },
+        "customBody": "={\n  \"usernames\": [\n    \"{{ $json.body.username }}\"\n  ],\n  \"resultsType\": \"posts\",\n  \"resultsLimit\": 3,\n  \"searchLimit\": 1\n} "
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        80,
+        1008
+      ],
+      "id": "2b80d782-e95b-47e1-a065-9a979119147a",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyApi": {
+          "id": "r5FewbbQCAvRz3Dk",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pega o texto gerado pela IA (tratando diferentes formatos)\nlet aiMessageRaw = $input.item.json.content || $input.item.json.text || $input.item.json.message?.content || $input.item.json;\n// Converte para string se for objeto\nlet aiMessage = \"\";\nif (typeof aiMessageRaw === 'string') {\n    aiMessage = aiMessageRaw;\n} else if (typeof aiMessageRaw === 'object') {\n    aiMessage = JSON.stringify(aiMessageRaw);\n}\n// 2. Pega os dados do Instagram\nconst apifyData = $('Run an Actor and get dataset').first().json;\n\n// 3. Extrai os posts recentes com thumbnails e análise\nlet recentPosts = [];\nif (apifyData.latestPosts && Array.isArray(apifyData.latestPosts)) {\n    recentPosts = apifyData.latestPosts.slice(0, 10).map((post, index) => {\n        // Determina o tipo do conteúdo\n        const isVideo = post.type === 'Video' || post.isVideo || post.videoUrl;\n        const type = isVideo ? 'reel' : 'post';\n        \n        // Cria resumo do caption\n        const caption = post.caption || post.text || '';\n        const summary = caption.length > 100 ? caption.substring(0, 100) + '...' : caption;\n        \n        return {\n            type: type,\n            thumbnail: post.displayUrl || post.thumbnailUrl || post.url || '',\n            caption: caption,\n            summary: summary,\n            likes: post.likesCount || post.likes || 0,\n            comments: post.commentsCount || post.comments || 0,\n            engagement: post.likesCount + post.commentsCount || 0,\n            timestamp: post.timestamp || post.takenAt || '',\n            connection_point: `Comentar sobre: \"${summary.substring(0, 50)}...\"`,\n            opportunity: isVideo ? 'Conteúdo em vídeo - alta chance de engajamento' : 'Post visual - analisar estética',\n            theme: caption.substring(0, 30) || 'Conteúdo do perfil',\n            isVideo: isVideo\n        };\n    });\n}\n\n// 4. Parse do JSON da análise da IA\nlet parsedAnalysis = {};\ntry {\n    // Se já é um objeto, usa direto\n    if (typeof aiMessageRaw === 'object' && aiMessageRaw !== null) {\n        // Verifica se tem a estrutura esperada\n        if (aiMessageRaw.photo_analysis || aiMessageRaw.connection_points || aiMessageRaw.tactics) {\n            parsedAnalysis = aiMessageRaw;\n        } else {\n            throw new Error(\"Objeto não tem estrutura esperada\");\n        }\n    } else {\n        // É string - tenta fazer parse\n        let cleanedMessage = aiMessage\n            .replace(/```json\\n?/gi, '')\n            .replace(/```\\n?/g, '')\n            .trim();\n        \n        // Tenta encontrar o JSON no texto\n        const jsonMatch = cleanedMessage.match(/\\{[\\s\\S]*\\}/);\n        if (jsonMatch) {\n            parsedAnalysis = JSON.parse(jsonMatch[0]);\n        } else {\n            throw new Error(\"JSON não encontrado\");\n        }\n    }\n} catch (e) {\n    console.log(\"Erro ao fazer parse:\", e.message);\n    // Fallback: cria análise básica\n    const fallbackText = String(aiMessage || \"Análise não disponível\").substring(0, 500);\n    parsedAnalysis = {\n        photo_analysis: \"Análise: \" + fallbackText,\n        connection_points: [\"Verificar bio e interesses em comum\"],\n        sales_opportunities: [\"Analisar manualmente as oportunidades\"],\n        approach_script: [{\n            fase: \"Quebra-gelo\",\n            objetivo: \"Iniciar conversa\",\n            mensagem: \"Olá! Vi seu perfil e achei muito interessante seu trabalho.\",\n            dicas: \"Personalize com base no perfil\"\n        }],\n        conversation_guide: fallbackText,\n        executive_summary: \"Análise gerada com formato não estruturado. Revise manualmente.\"\n    };\n}\n\n// 5. Monta o objeto final com todos os dados\nreturn {\n  json: {\n    status: \"success\",\n    profile: {\n        username: apifyData.username || \"\",\n        full_name: apifyData.fullName || \"\",\n        profile_pic: apifyData.profilePicUrl || \"\",\n        bio: apifyData.biography || \"\",\n        followers: apifyData.followersCount || 0,\n        followers_formatted: (apifyData.followersCount || 0).toLocaleString('pt-BR'),\n        following: apifyData.followingCount || 0,\n        posts: apifyData.postsCount || 0,\n        posts_formatted: (apifyData.postsCount || 0).toLocaleString('pt-BR'),\n        website: apifyData.externalUrl || \"\",\n        category: apifyData.businessCategoryName || \"\",\n        is_business: apifyData.isBusinessAccount || false,\n        is_verified: apifyData.isVerified || false\n    },\n    // AI-generated inspirational content\n    tactics: parsedAnalysis.tactics || [],\n    messages: parsedAnalysis.messages || [],\n    ideas: parsedAnalysis.ideas || [],\n    triggers: parsedAnalysis.triggers || [],\n    // Deep analysis\n    bio_analysis: parsedAnalysis.bio_analysis || '',\n    gender: parsedAnalysis.gender || 'unknown',\n    // Recent posts with thumbnails and analysis\n    recent_posts: recentPosts,\n    // Legacy fields for compatibility\n    photo_analysis: parsedAnalysis.photo_analysis || 'Análise visual não disponível.',\n    connection_points: parsedAnalysis.connection_points || [],\n    sales_opportunities: parsedAnalysis.sales_opportunities || [],\n    approach_script: parsedAnalysis.approach_script || '',\n    conversation_guide: parsedAnalysis.conversation_guide || '',\n    executive_summary: parsedAnalysis.executive_summary || '',\n    // Metadata\n    metadata: {\n        followers: apifyData.followersCount || 0,\n        processed_at: new Date().toISOString(),\n        posts_analyzed: recentPosts.length\n    }\n  }\n};"
+      },
+      "id": "5067eb31-cc1e-49a8-a963-39395348e06b",
+      "name": "Combine Results1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        640,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "4c506168-1c8d-4558-a05f-f3361ce30c84",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        944,
+        1008
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Combine Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Recebe Perfil": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Results1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cbc3d35e-1778-4a08-8cac-60fa2390fc91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dfc28cb9f3df5f53a428daf4180246203426f3d36b8c01d743e9be1152f2e632"
+  },
+  "id": "8qLUyTeGur4DBfYs",
+  "tags": []
+}
