@@ -96,9 +96,9 @@ class LeadAnalyzer {
         this.startProgressAnimation();
 
         try {
-            // Create AbortController for timeout (3 minutes to allow for Apify + Claude processing)
+            // Create AbortController for timeout (4 minutes to allow for Apify + Claude processing)
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 180000);
+            const timeoutId = setTimeout(() => controller.abort(), 240000);
 
             const response = await fetch(this.n8nWebhookUrl, {
                 method: 'POST',
