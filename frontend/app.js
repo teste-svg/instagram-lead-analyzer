@@ -308,11 +308,31 @@ class LeadAnalyzer {
         `;
     }
 
+    // Helper: Proxy image URL through weserv.nl to bypass CORS
+    proxyImageUrl(url) {
+        if (!url || url.includes('placeholder') || url.includes('ui-avatars')) {
+            return url;
+        }
+        // Use weserv.nl as image proxy - it fetches the image server-side
+        return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=200&h=200&fit=cover&a=center`;
+    }
+
+    // Generate avatar fallback with initials
+    generateAvatarUrl(name) {
+        const safeName = encodeURIComponent(name || 'User');
+        return `https://ui-avatars.com/api/?name=${safeName}&background=8b5cf6&color=fff&size=150&bold=true`;
+    }
+
     displayResults(data) {
         const container = document.getElementById('resultsContainer');
 
-        // Profile data
-        document.getElementById('profilePic').src = data.profile.profile_pic || 'https://via.placeholder.com/100';
+        // Profile data - use proxy for Instagram images
+        const profilePicUrl = this.proxyImageUrl(data.profile.profile_pic);
+        const fallbackAvatar = this.generateAvatarUrl(data.profile.full_name || data.profile.username);
+
+        const profilePicEl = document.getElementById('profilePic');
+        profilePicEl.src = profilePicUrl || fallbackAvatar;
+        profilePicEl.onerror = () => { profilePicEl.src = fallbackAvatar; };
         document.getElementById('profileName').textContent = data.profile.full_name || '-';
         document.getElementById('profileUsername').textContent = '@' + data.profile.username;
         document.getElementById('postsCount').textContent = data.profile.posts || '0';
@@ -587,16 +607,20 @@ class LeadAnalyzer {
             return;
         }
 
-        container.innerHTML = this.history.map(item => `
+        container.innerHTML = this.history.map(item => {
+            const proxyPic = this.proxyImageUrl(item.profile_pic);
+            const fallbackPic = this.generateAvatarUrl(item.full_name || item.username);
+            return `
             <div class="history-item" data-id="${item.id}">
-                <img src="${item.profile_pic || 'https://via.placeholder.com/50'}" alt="${item.full_name}">
+                <img src="${proxyPic || fallbackPic}" alt="${item.full_name}" onerror="this.src='${fallbackPic}'">
                 <div class="history-item-info">
                     <h4>${item.full_name || item.username}</h4>
                     <p>@${item.username}</p>
                 </div>
                 <span class="history-item-date">${this.formatDate(item.date)}</span>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         // Bind click events
         container.querySelectorAll('.history-item').forEach(item => {
