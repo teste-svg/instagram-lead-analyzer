@@ -3,38 +3,83 @@
   "nodes": [
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "claude-sonnet-4-5-20250929",
-          "mode": "list",
-          "cachedResultName": "claude-sonnet-4-5-20250929"
-        },
-        "messages": {
-          "values": [
+        "jsCode": "// Prepara dados para o Gemini\nconst apifyData = $input.first().json;\nconst routerData = $('Roteador3').first().json;\nconst lead = Array.isArray(apifyData) ? apifyData[0] : apifyData;\n\n// Extrair @mentions da bio\nconst bio = lead?.biography || '';\nconst mentions = bio.match(/@[\\w.]+/g) || [];\n\n// Extrair URLs de posts recentes (até 5)\nconst posts = lead?.latestPosts || lead?.posts || [];\nconst postData = posts.slice(0, 5).map(p => ({\n  caption: p.caption || '',\n  likes: p.likesCount || 0,\n  comments: p.commentsCount || 0,\n  type: p.type || 'image',\n  url: p.displayUrl || p.url || ''\n}));\n\nreturn {\n  json: {\n    username: lead?.username || routerData?.username || '',\n    fullName: lead?.fullName || '',\n    biography: bio,\n    mentions: mentions,\n    followersCount: lead?.followersCount || 0,\n    followingCount: lead?.followingCount || 0,\n    postsCount: lead?.postsCount || 0,\n    profilePicUrl: lead?.profilePicUrlHD || lead?.profilePicUrl || '',\n    externalUrl: lead?.externalUrl || '',\n    businessCategory: lead?.businessCategoryName || '',\n    isBusinessAccount: lead?.isBusinessAccount || false,\n    isVerified: lead?.isVerified || false,\n    recentPosts: postData,\n    training_data: routerData.training_data || {}\n  }\n};"
+      },
+      "id": "3adeb6d8-e83a-47c5-aa71-5bed6b572669",
+      "name": "Prepara Dados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCIdRJ_f7F3PQ8Zaq8NWqEsv9Ld5r3ksm0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "content": "={\n  \"photo_analysis\": \"Descrição da análise da foto...\",\n  \"connection_points\": [\"Ponto 1\", \"Ponto 2\", \"Ponto 3\"],\n  \"sales_opportunities\": [\"Oportunidade 1\", \"Oportunidade 2\"],\n  \"approach_script\": [\n    {\"step\": 1, \"message\": \"Primeira mensagem...\"},\n    {\"step\": 2, \"message\": \"Segunda mensagem...\"}\n  ],\n  \"conversation_guide\": \"Guia detalhado de conversa...\",\n  \"executive_summary\": \"Resumo executivo do lead...\"\n}"
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ]
         },
-        "options": {
-          "maxTokens": 3000,
-          "temperature": 0.7
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": `VOCÊ É UM ESPECIALISTA EM SOCIAL SELLING DE ALTA CONVERSÃO.\n\nSUA MISSÃO: Analisar profundamente este lead do Instagram e criar uma estratégia de abordagem ÚNICA e PERSONALIZADA.\n\n═══════════════════════════════════════════════════════════════════\n█ EXPERT QUE VAI ABORDAR\n═══════════════════════════════════════════════════════════════════\n\nNome: ${$json.training_data?.userName || 'Expert'}\nNegócio: ${$json.training_data?.userBusiness || 'Não informado'}\nNicho: ${$json.training_data?.userNiche || 'Não informado'}\nTom de comunicação: ${$json.training_data?.communicationTone || 'casual e direto'}\nEstilo de abordagem: ${$json.training_data?.approachStyle || 'direto'}\nProposta de valor: ${$json.training_data?.valueProposition || 'Não informado'}\nPúblico-alvo: ${$json.training_data?.targetAudience || 'Não informado'}\nEvitar falar sobre: ${$json.training_data?.avoidTopics || 'Nada específico'}\n\nEXEMPLOS DE MENSAGENS DO EXPERT (COPIE O ESTILO EXATO):\n${$json.training_data?.messageExamples || 'Nenhum exemplo - use tom direto e profissional'}\n\n═══════════════════════════════════════════════════════════════════\n█ DADOS DO LEAD A SER ABORDADO\n═══════════════════════════════════════════════════════════════════\n\nUsername: @${$json.username}\nNome: ${$json.fullName || 'Não informado'}\n\nBIO COMPLETA:\n\"${$json.biography || 'Sem bio'}\"\n\n@MENTIONS NA BIO (empresas/pessoas mencionadas):\n${JSON.stringify($json.mentions || [])}\n\nESTATÍSTICAS:\n- Seguidores: ${$json.followersCount}\n- Seguindo: ${$json.followingCount}\n- Posts: ${$json.postsCount}\n- Categoria: ${$json.businessCategory || 'Pessoal'}\n- Conta business: ${$json.isBusinessAccount ? 'Sim' : 'Não'}\n- Verificado: ${$json.isVerified ? 'Sim' : 'Não'}\n- Website: ${$json.externalUrl || 'Nenhum'}\n\nÚLTIMOS 5 POSTS/REELS (análise o conteúdo):\n${JSON.stringify($json.recentPosts || [])}\n\n═══════════════════════════════════════════════════════════════════\n█ O QUE VOCÊ DEVE ANALISAR\n═══════════════════════════════════════════════════════════════════\n\n1. A BIO: O que ela revela sobre a pessoa? Cargo? Empresa? Paixões?\n2. @MENTIONS: Quem são? Empresas? Parceiros? Família?\n3. POSTS RECENTES: Sobre o que o lead fala? Quais temas?\n4. ENGAJAMENTO: Como é a interação? Alto? Baixo?\n5. CONEXÕES: O que conecta o lead com o expert?\n\n═══════════════════════════════════════════════════════════════════\n█ REGRAS ABSOLUTAS\n═══════════════════════════════════════════════════════════════════\n\n❌ PROIBIDO:\n- Usar placeholders como [mencione algo]\n- \"Oi, tudo bem?\", \"Olá!\", \"Boa tarde!\"\n- Frases genéricas que servem para qualquer pessoa\n- \"Vi seu perfil e achei interessante\"\n\n✅ OBRIGATÓRIO:\n- Mensagens COMPLETAS e PRONTAS para copiar e colar\n- Mencionar algo ESPECÍFICO da bio ou posts\n- COPIAR o estilo dos exemplos de mensagens do expert\n- Ser DIRETO e criativo\n- Cada mensagem máximo 3 linhas\n\n═══════════════════════════════════════════════════════════════════\n█ RESPOSTA (APENAS JSON VÁLIDO)\n═══════════════════════════════════════════════════════════════════\n\n{\n  \"tactics\": [\n    { \"emoji\": \"🔍\", \"text\": \"[Ação específica baseada nos posts do lead]\" },\n    { \"emoji\": \"📱\", \"text\": \"[Ação baseada no conteúdo dos reels]\" },\n    { \"emoji\": \"🎯\", \"text\": \"[Ação personalizada para este lead]\" }\n  ],\n  \"messages\": [\n    { \"label\": \"Abertura\", \"text\": \"[MENSAGEM COMPLETA mencionando algo específico da bio ou post]\" },\n    { \"label\": \"Qualificação\", \"text\": \"[MENSAGEM COMPLETA para descobrir dores]\" },\n    { \"label\": \"Transição\", \"text\": \"[MENSAGEM COMPLETA conectando problema com solução]\" },\n    { \"label\": \"Fechamento\", \"text\": \"[MENSAGEM COMPLETA com CTA]\" }\n  ],\n  \"ideas\": [\n    \"[Ideia criativa 1 baseada nos posts do lead]\",\n    \"[Ideia criativa 2 baseada na bio]\",\n    \"[Ideia criativa 3 única para este perfil]\"\n  ],\n  \"triggers\": [\n    { \"icon\": \"[emoji]\", \"title\": \"[Nome do gatilho]\", \"text\": \"[Como usar com ESTE lead especificamente]\" },\n    { \"icon\": \"[emoji]\", \"title\": \"[Nome do gatilho]\", \"text\": \"[Aplicação específica]\" },\n    { \"icon\": \"[emoji]\", \"title\": \"[Nome do gatilho]\", \"text\": \"[Aplicação específica]\" }\n  ]\n}\n\nIMPORTANTE: Substitua TODOS os textos entre colchetes por conteúdo REAL e ESPECÍFICO para este lead.`\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.8,\n    \"maxOutputTokens\": 3000\n  }\n}\n}}",
+        "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.anthropic",
-      "typeVersion": 1,
+      "id": "b5bbc417-c567-4e5c-9994-e97d7376adba",
+      "name": "Gemini Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
-        272,
-        1008
-      ],
-      "id": "982aa3c9-9f4b-432e-9281-69815ce5d3b3",
-      "name": "Message a model",
-      "credentials": {
-        "anthropicApi": {
-          "id": "3H2nZu0lX3meAQp7",
-          "name": "Anthropic account"
-        }
-      }
+        -160,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const geminiResponse = $input.first().json;\nconst leadData = $('Prepara Dados').first().json;\n\nlet content = '';\nif (geminiResponse.candidates && geminiResponse.candidates[0]?.content?.parts?.[0]?.text) {\n  content = geminiResponse.candidates[0].content.parts[0].text;\n}\n\nlet parsed = { tactics: [], messages: [], ideas: [], triggers: [] };\ntry {\n  // Extract JSON from response\n  const match = content.match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    parsed = JSON.parse(match[0]);\n  }\n} catch (e) {\n  console.log('Parse error:', e.message);\n  console.log('Content:', content);\n}\n\n// Map recent posts to carousel format\nconst recentPosts = (leadData.recentPosts || []).map((post, index) => {\n  const isVideo = post.type === 'Video' || post.type === 'video';\n  const caption = post.caption || '';\n  const summary = caption.length > 100 ? caption.substring(0, 100) + '...' : caption;\n  \n  return {\n    type: isVideo ? 'reel' : 'post',\n    thumbnail: post.url || '',\n    caption: caption,\n    summary: summary,\n    likes: post.likes || 0,\n    comments: post.comments || 0,\n    engagement: (post.likes || 0) + (post.comments || 0),\n    connection_point: summary ? `Comentar sobre: \"${summary.substring(0, 50)}...\"` : 'Engajar com este conteúdo',\n    opportunity: isVideo ? 'Conteúdo em vídeo - alta chance de engajamento' : 'Post visual - analisar estética',\n    theme: caption.substring(0, 30) || 'Conteúdo do perfil',\n    isVideo: isVideo\n  };\n});\n\nreturn {\n  json: {\n    status: \"success\",\n    profile: {\n      username: leadData.username || '',\n      full_name: leadData.fullName || '',\n      profile_pic: leadData.profilePicUrl || '',\n      bio: leadData.biography || '',\n      following: leadData.followingCount || 0,\n      followers: leadData.followersCount || 0,\n      posts: leadData.postsCount || 0,\n      website: leadData.externalUrl || '',\n      category: leadData.businessCategory || ''\n    },\n    tactics: parsed.tactics || [],\n    messages: parsed.messages || [],\n    ideas: parsed.ideas || [],\n    triggers: parsed.triggers || [],\n    mentions_found: leadData.mentions || [],\n    recent_posts: recentPosts,\n    posts_analyzed: recentPosts.length\n  }\n};"
+      },
+      "id": "a6e21e6e-f3a7-45c2-8f2f-d203020d93c3",
+      "name": "Parse Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCIdRJ_f7F3PQ8Zaq8NWqEsv9Ld5r3ksm0",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Você é {{ $json.training_data.userName || 'um expert' }}.\\n\\nSeu tom: {{ $json.training_data.communicationTone || 'casual' }}\\n\\nExemplos das suas mensagens:\\n{{ $json.training_data.messageExamples || 'Use tom profissional' }}\\n\\nHistórico:\\n{{ $json.conversation_history || 'Início' }}\\n\\nO lead respondeu:\\n\\\"{{ $json.lead_response }}\\\"\\n\\nEscreva a PRÓXIMA MENSAGEM (máx 3 linhas) no seu estilo.\\n\\nJSON apenas:\\n{\\n  \\\"follow_up_message\\\": \\\"[SUA MENSAGEM]\\\",\\n  \\\"tips\\\": \\\"[DICA RÁPIDA]\\\"\\n}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.7,\n    \"maxOutputTokens\": 500\n  }\n}",
+        "options": {}
+      },
+      "id": "b5832c16-2000-48e6-8077-930d4990597d",
+      "name": "Gemini Follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -608,
+        -208
+      ]
     },
     {
       "parameters": {
@@ -43,54 +88,92 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "62ea0741-487a-4c58-960f-901fc216f0a2",
-      "name": "Webhook - Recebe Perfil",
+      "id": "fba1a58c-9f6b-4d76-b2d4-bafb528fca23",
+      "name": "Webhook3",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [
-        -288,
-        1008
+        -1264,
+        -304
       ],
-      "webhookId": "948115f0-112b-4fdd-92cc-64310790faae"
+      "webhookId": "social-selling-gemini"
     },
     {
       "parameters": {
-        "operation": "Run actor and get dataset",
-        "actorId": {
-          "__rl": true,
-          "value": "dSCLg0C3YEZ83HzYX",
-          "mode": "list",
-          "cachedResultName": "Instagram Profile Scraper (apify/instagram-profile-scraper)",
-          "cachedResultUrl": "https://console.apify.com/actors/dSCLg0C3YEZ83HzYX/input"
-        },
-        "customBody": "={\n  \"usernames\": [\n    \"{{ $json.body.username }}\"\n  ],\n  \"resultsType\": \"posts\",\n  \"resultsLimit\": 3,\n  \"searchLimit\": 1\n} "
+        "jsCode": "const body = $input.first().json.body;\nconst action = body.action || 'analyze';\n\nif (action === 'follow_up') {\n  return {\n    json: {\n      route: 'follow_up',\n      lead_response: body.lead_response || '',\n      conversation_history: body.conversation_history || '',\n      training_data: body.training_data || {},\n      lead_profile: body.lead_profile || {},\n      username: body.username || ''\n    }\n  };\n} else {\n  return {\n    json: {\n      route: 'analyze',\n      username: body.username || '',\n      training_data: body.training_data || {}\n    }\n  };\n}"
       },
-      "type": "@apify/n8n-nodes-apify.apify",
-      "typeVersion": 1,
-      "position": [
-        80,
-        1008
-      ],
-      "id": "2b80d782-e95b-47e1-a065-9a979119147a",
-      "name": "Run an Actor and get dataset",
-      "credentials": {
-        "apifyApi": {
-          "id": "r5FewbbQCAvRz3Dk",
-          "name": "Apify account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// 1. Pega o texto gerado pela IA (tratando diferentes formatos)\nlet aiMessageRaw = $input.item.json.content || $input.item.json.text || $input.item.json.message?.content || $input.item.json;\n// Converte para string se for objeto\nlet aiMessage = \"\";\nif (typeof aiMessageRaw === 'string') {\n    aiMessage = aiMessageRaw;\n} else if (typeof aiMessageRaw === 'object') {\n    aiMessage = JSON.stringify(aiMessageRaw);\n}\n// 2. Pega os dados do Instagram\nconst apifyData = $('Run an Actor and get dataset').first().json;\n\n// 3. Extrai os posts recentes com thumbnails e análise\nlet recentPosts = [];\nif (apifyData.latestPosts && Array.isArray(apifyData.latestPosts)) {\n    recentPosts = apifyData.latestPosts.slice(0, 10).map((post, index) => {\n        // Determina o tipo do conteúdo\n        const isVideo = post.type === 'Video' || post.isVideo || post.videoUrl;\n        const type = isVideo ? 'reel' : 'post';\n        \n        // Cria resumo do caption\n        const caption = post.caption || post.text || '';\n        const summary = caption.length > 100 ? caption.substring(0, 100) + '...' : caption;\n        \n        return {\n            type: type,\n            thumbnail: post.displayUrl || post.thumbnailUrl || post.url || '',\n            caption: caption,\n            summary: summary,\n            likes: post.likesCount || post.likes || 0,\n            comments: post.commentsCount || post.comments || 0,\n            engagement: post.likesCount + post.commentsCount || 0,\n            timestamp: post.timestamp || post.takenAt || '',\n            connection_point: `Comentar sobre: \"${summary.substring(0, 50)}...\"`,\n            opportunity: isVideo ? 'Conteúdo em vídeo - alta chance de engajamento' : 'Post visual - analisar estética',\n            theme: caption.substring(0, 30) || 'Conteúdo do perfil',\n            isVideo: isVideo\n        };\n    });\n}\n\n// 4. Parse do JSON da análise da IA\nlet parsedAnalysis = {};\ntry {\n    // Se já é um objeto, usa direto\n    if (typeof aiMessageRaw === 'object' && aiMessageRaw !== null) {\n        // Verifica se tem a estrutura esperada\n        if (aiMessageRaw.photo_analysis || aiMessageRaw.connection_points || aiMessageRaw.tactics) {\n            parsedAnalysis = aiMessageRaw;\n        } else {\n            throw new Error(\"Objeto não tem estrutura esperada\");\n        }\n    } else {\n        // É string - tenta fazer parse\n        let cleanedMessage = aiMessage\n            .replace(/```json\\n?/gi, '')\n            .replace(/```\\n?/g, '')\n            .trim();\n        \n        // Tenta encontrar o JSON no texto\n        const jsonMatch = cleanedMessage.match(/\\{[\\s\\S]*\\}/);\n        if (jsonMatch) {\n            parsedAnalysis = JSON.parse(jsonMatch[0]);\n        } else {\n            throw new Error(\"JSON não encontrado\");\n        }\n    }\n} catch (e) {\n    console.log(\"Erro ao fazer parse:\", e.message);\n    // Fallback: cria análise básica\n    const fallbackText = String(aiMessage || \"Análise não disponível\").substring(0, 500);\n    parsedAnalysis = {\n        photo_analysis: \"Análise: \" + fallbackText,\n        connection_points: [\"Verificar bio e interesses em comum\"],\n        sales_opportunities: [\"Analisar manualmente as oportunidades\"],\n        approach_script: [{\n            fase: \"Quebra-gelo\",\n            objetivo: \"Iniciar conversa\",\n            mensagem: \"Olá! Vi seu perfil e achei muito interessante seu trabalho.\",\n            dicas: \"Personalize com base no perfil\"\n        }],\n        conversation_guide: fallbackText,\n        executive_summary: \"Análise gerada com formato não estruturado. Revise manualmente.\"\n    };\n}\n\n// 5. Monta o objeto final com todos os dados\nreturn {\n  json: {\n    status: \"success\",\n    profile: {\n        username: apifyData.username || \"\",\n        full_name: apifyData.fullName || \"\",\n        profile_pic: apifyData.profilePicUrl || \"\",\n        bio: apifyData.biography || \"\",\n        followers: apifyData.followersCount || 0,\n        followers_formatted: (apifyData.followersCount || 0).toLocaleString('pt-BR'),\n        following: apifyData.followingCount || 0,\n        posts: apifyData.postsCount || 0,\n        posts_formatted: (apifyData.postsCount || 0).toLocaleString('pt-BR'),\n        website: apifyData.externalUrl || \"\",\n        category: apifyData.businessCategoryName || \"\",\n        is_business: apifyData.isBusinessAccount || false,\n        is_verified: apifyData.isVerified || false\n    },\n    // AI-generated inspirational content\n    tactics: parsedAnalysis.tactics || [],\n    messages: parsedAnalysis.messages || [],\n    ideas: parsedAnalysis.ideas || [],\n    triggers: parsedAnalysis.triggers || [],\n    // Deep analysis\n    bio_analysis: parsedAnalysis.bio_analysis || '',\n    gender: parsedAnalysis.gender || 'unknown',\n    // Recent posts with thumbnails and analysis\n    recent_posts: recentPosts,\n    // Legacy fields for compatibility\n    photo_analysis: parsedAnalysis.photo_analysis || 'Análise visual não disponível.',\n    connection_points: parsedAnalysis.connection_points || [],\n    sales_opportunities: parsedAnalysis.sales_opportunities || [],\n    approach_script: parsedAnalysis.approach_script || '',\n    conversation_guide: parsedAnalysis.conversation_guide || '',\n    executive_summary: parsedAnalysis.executive_summary || '',\n    // Metadata\n    metadata: {\n        followers: apifyData.followersCount || 0,\n        processed_at: new Date().toISOString(),\n        posts_analyzed: recentPosts.length\n    }\n  }\n};"
-      },
-      "id": "5067eb31-cc1e-49a8-a963-39395348e06b",
-      "name": "Combine Results1",
+      "id": "27f0a196-5095-467b-b6ea-0fe80ab95ce7",
+      "name": "Roteador3",
       "type": "n8n-nodes-base.code",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [
-        640,
-        1008
+        -1056,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "route-check",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "follow_up",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9e7b4d24-e6d6-4316-bdd8-ccc09c123ed9",
+      "name": "É Follow-up?3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=YOUR_APIFY_TOKEN_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"usernames\": [\"{{ $json.username }}\"],\n  \"resultsLimit\": 6\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "cc93c557-bb49-4df9-ae01-668689257482",
+      "name": "Apify Scraper3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -608,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const geminiResponse = $input.first().json;\n\nlet content = '';\nif (geminiResponse.candidates && geminiResponse.candidates[0]?.content?.parts?.[0]?.text) {\n  content = geminiResponse.candidates[0].content.parts[0].text;\n}\n\nlet parsed = {};\ntry {\n  const match = content.match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    parsed = JSON.parse(match[0]);\n  }\n} catch (e) {\n  parsed = {\n    follow_up_message: \"Me conta mais sobre isso!\",\n    tips: \"Resposta de fallback\"\n  };\n}\n\nreturn {\n  json: {\n    follow_up_message: parsed.follow_up_message || \"Me conta mais!\",\n    tips: parsed.tips || \"\"\n  }\n};"
+      },
+      "id": "7f13449e-c7f4-4b1e-b76e-11e205fa1a16",
+      "name": "Parse Follow-up3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -208
       ]
     },
     {
@@ -108,65 +191,146 @@
           }
         }
       },
-      "id": "4c506168-1c8d-4558-a05f-f3361ce30c84",
-      "name": "Respond to Webhook1",
+      "id": "037df5b2-5fef-4b74-8211-e9b2b41f5284",
+      "name": "Responder Análise3",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 1.1,
       "position": [
-        944,
-        1008
+        272,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "59137eb0-a1f2-4b63-8f06-862e38498bd5",
+      "name": "Responder Follow-up3",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        -208
       ]
     }
   ],
   "pinData": {},
   "connections": {
-    "Message a model": {
+    "Prepara Dados": {
       "main": [
         [
           {
-            "node": "Combine Results1",
+            "node": "Gemini Vision",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Webhook - Recebe Perfil": {
+    "Gemini Vision": {
       "main": [
         [
           {
-            "node": "Run an Actor and get dataset",
+            "node": "Parse Resposta",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Combine Results1": {
+    "Parse Resposta": {
       "main": [
         [
           {
-            "node": "Respond to Webhook1",
+            "node": "Responder Análise3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run an Actor and get dataset": {
+    "Gemini Follow-up": {
       "main": [
         [
           {
-            "node": "Message a model",
+            "node": "Parse Follow-up3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Respond to Webhook1": {
+    "Webhook3": {
       "main": [
-        []
+        [
+          {
+            "node": "Roteador3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador3": {
+      "main": [
+        [
+          {
+            "node": "É Follow-up?3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Follow-up?3": {
+      "main": [
+        [
+          {
+            "node": "Gemini Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Apify Scraper3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify Scraper3": {
+      "main": [
+        [
+          {
+            "node": "Prepara Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Follow-up3": {
+      "main": [
+        [
+          {
+            "node": "Responder Follow-up3",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -174,7 +338,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "cbc3d35e-1778-4a08-8cac-60fa2390fc91",
+  "versionId": "15f4eacb-cd34-4df5-990e-e90588fd4c0a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dfc28cb9f3df5f53a428daf4180246203426f3d36b8c01d743e9be1152f2e632"
