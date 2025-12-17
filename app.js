@@ -651,6 +651,9 @@ class LeadAnalyzer {
         // Populate deep analysis sections
         this.populateBioAnalysis(data.bio_analysis || data.profile?.bio || '', data.gender || 'unknown');
 
+        // Populate lead interests card
+        this.populateLeadInterests(data.lead_interests || []);
+
         // Populate reels and posts carousels separately
         const allPosts = data.posts_analyzed || data.recent_posts || [];
         this.populateReelsCarousel(allPosts);
@@ -815,6 +818,33 @@ class LeadAnalyzer {
                 </div>` : ''}
             `;
         }
+    }
+
+    populateLeadInterests(interests) {
+        const grid = document.getElementById('leadInterestsGrid');
+        const emptyMsg = document.getElementById('noInterestsMessage');
+
+        if (!grid) return;
+
+        const interestsArray = Array.isArray(interests) ? interests : [];
+
+        if (!interestsArray.length) {
+            grid.innerHTML = '';
+            if (emptyMsg) emptyMsg.classList.remove('hidden');
+            return;
+        }
+
+        if (emptyMsg) emptyMsg.classList.add('hidden');
+
+        grid.innerHTML = interestsArray.map(interest => `
+            <div class="interest-item">
+                <div class="interest-item-header">
+                    <span class="interest-category">${interest.category || 'Interesse'}</span>
+                </div>
+                <div class="interest-detail">${interest.detail || 'Não especificado'}</div>
+                <div class="interest-starter">${interest.conversation_starter || 'Explore esse tema na conversa'}</div>
+            </div>
+        `).join('');
     }
 
     populateReelsCarousel(posts) {
@@ -1036,7 +1066,8 @@ class LeadAnalyzer {
     loadTrainingForm() {
         // Load training data from active expert
         const fields = ['userName', 'userBusiness', 'userNiche', 'messageExamples',
-            'valueProposition', 'targetAudience', 'avoidTopics'];
+            'valueProposition', 'targetAudience', 'avoidTopics',
+            'whatYouDo', 'whatYouDeliver', 'problemYouSolve', 'yourMethodology'];
 
         fields.forEach(field => {
             const el = document.getElementById(field);
@@ -1061,7 +1092,12 @@ class LeadAnalyzer {
             messageExamples: document.getElementById('messageExamples').value,
             valueProposition: document.getElementById('valueProposition').value,
             targetAudience: document.getElementById('targetAudience').value,
-            avoidTopics: document.getElementById('avoidTopics').value
+            avoidTopics: document.getElementById('avoidTopics').value,
+            // New detailed fields
+            whatYouDo: document.getElementById('whatYouDo')?.value || '',
+            whatYouDeliver: document.getElementById('whatYouDeliver')?.value || '',
+            problemYouSolve: document.getElementById('problemYouSolve')?.value || '',
+            yourMethodology: document.getElementById('yourMethodology')?.value || ''
         };
 
         // Save to current expert profile
@@ -1094,6 +1130,9 @@ class LeadAnalyzer {
             document.getElementById('valueProposition').value = '';
             document.getElementById('targetAudience').value = '';
             document.getElementById('avoidTopics').value = '';
+            // Clear new fields
+            const newFields = ['whatYouDo', 'whatYouDeliver', 'problemYouSolve', 'yourMethodology'];
+            newFields.forEach(f => { const el = document.getElementById(f); if (el) el.value = ''; });
 
             this.updateExpertSelector();
             this.showToast('Configurações resetadas!', 'success');
