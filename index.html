@@ -280,16 +280,25 @@
                             </div>
                         </div>
 
-                        <!-- Messages Card -->
-                        <div class="inspiration-card messages">
+                        <!-- Messages Card - ENHANCED -->
+                        <div class="inspiration-card messages messages-enhanced">
                             <div class="inspiration-card-header">
                                 <div class="inspiration-card-icon">💬</div>
                                 <div>
                                     <h3 class="inspiration-card-title">Mensagens Prontas</h3>
-                                    <p class="inspiration-card-subtitle">Copie e envie</p>
+                                    <p class="inspiration-card-subtitle">Copie e personalize</p>
                                 </div>
+                                <button class="btn-generate-more" id="generateMoreMessages"
+                                    title="Gerar novas mensagens">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+                                    </svg>
+                                    Gerar Mais
+                                </button>
                             </div>
-                            <div class="inspiration-card-content" id="messagesContent">
+                            <div class="inspiration-card-content messages-list" id="messagesContent">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
@@ -397,6 +406,110 @@
                             </div>
                             <p class="interests-empty hidden" id="noInterestsMessage">Nenhum interesse específico
                                 identificado</p>
+                        </div>
+                    </div>
+
+                    <!-- MESSAGE BUILDER / COMPOSITOR DE MENSAGEM -->
+                    <div class="result-card full-width message-builder-card">
+                        <div class="card-header">
+                            <h2>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                                Compositor de Mensagem
+                            </h2>
+                            <span class="card-badge builder-badge">Monte sua abordagem</span>
+                        </div>
+                        <div class="card-content">
+                            <p class="builder-instructions">Selecione os elementos para construir sua mensagem
+                                personalizada:</p>
+
+                            <!-- Variable Selection Categories -->
+                            <div class="builder-categories">
+                                <!-- Greeting Category -->
+                                <div class="builder-category">
+                                    <h4 class="category-title">
+                                        <span class="category-icon">👋</span> Saudação
+                                    </h4>
+                                    <div class="variable-chips" id="greetingChips">
+                                        <button class="variable-chip" data-type="greeting"
+                                            data-value="Fala {nome},">Fala {nome},</button>
+                                        <button class="variable-chip" data-type="greeting" data-value="E aí {nome},">E
+                                            aí {nome},</button>
+                                        <button class="variable-chip" data-type="greeting"
+                                            data-value="Grande {nome},">Grande {nome},</button>
+                                        <button class="variable-chip" data-type="greeting" data-value="">Sem
+                                            saudação</button>
+                                    </div>
+                                </div>
+
+                                <!-- Hook Category -->
+                                <div class="builder-category">
+                                    <h4 class="category-title">
+                                        <span class="category-icon">🎯</span> Gancho (baseado no perfil)
+                                    </h4>
+                                    <div class="variable-chips" id="hookChips">
+                                        <!-- Populated by JS based on lead data -->
+                                    </div>
+                                </div>
+
+                                <!-- Interest Category -->
+                                <div class="builder-category">
+                                    <h4 class="category-title">
+                                        <span class="category-icon">❤️</span> Interesse Identificado
+                                    </h4>
+                                    <div class="variable-chips" id="interestChips">
+                                        <!-- Populated by JS based on lead_interests -->
+                                    </div>
+                                </div>
+
+                                <!-- Question Category -->
+                                <div class="builder-category">
+                                    <h4 class="category-title">
+                                        <span class="category-icon">❓</span> Pergunta de Transição
+                                    </h4>
+                                    <div class="variable-chips" id="questionChips">
+                                        <button class="variable-chip" data-type="question"
+                                            data-value="Já fez algo no digital?">Já fez algo no digital?</button>
+                                        <button class="variable-chip" data-type="question"
+                                            data-value="Já conhece o mercado de lançamentos?">Sobre lançamentos</button>
+                                        <button class="variable-chip" data-type="question"
+                                            data-value="Sempre separo um tempo pra trocar ideia...">Convite para
+                                            conversa</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Compose Area -->
+                            <div class="compose-area">
+                                <label for="composedMessage">Mensagem Composta:</label>
+                                <div class="compose-preview" id="composePreview">
+                                    <span class="placeholder-text">Selecione os elementos acima para compor sua
+                                        mensagem...</span>
+                                </div>
+                                <textarea id="composedMessage" rows="4"
+                                    placeholder="Sua mensagem aparecerá aqui..."></textarea>
+                                <div class="compose-actions">
+                                    <button class="btn-secondary" id="clearCompose">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path
+                                                d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        </svg>
+                                        Limpar
+                                    </button>
+                                    <button class="btn-primary" id="copyComposedMessage">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                        </svg>
+                                        Copiar Mensagem
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
