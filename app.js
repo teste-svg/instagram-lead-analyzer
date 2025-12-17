@@ -6,6 +6,18 @@ class LeadAnalyzer {
         this.trainingData = JSON.parse(localStorage.getItem('trainingData')) || {};
         this.history = JSON.parse(localStorage.getItem('analysisHistory')) || [];
 
+        // Progress tracking
+        this.progressInterval = null;
+        this.currentProgress = 0;
+        this.currentStep = 0;
+        this.progressSteps = [
+            { step: 1, text: 'Conectando ao servidor...', maxProgress: 15 },
+            { step: 2, text: 'Extraindo dados do perfil...', maxProgress: 40 },
+            { step: 3, text: 'Analisando foto de perfil...', maxProgress: 60 },
+            { step: 4, text: 'IA gerando análise e roteiros...', maxProgress: 85 },
+            { step: 5, text: 'Finalizando...', maxProgress: 100 }
+        ];
+
         this.init();
     }
 
@@ -81,9 +93,13 @@ class LeadAnalyzer {
         }
 
         this.showLoading(true);
-        this.updateLoadingText('Extraindo dados do perfil...');
+        this.startProgressAnimation();
 
         try {
+            // Create AbortController for timeout (3 minutes to allow for Apify + Claude processing)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 180000);
+
             const response = await fetch(this.n8nWebhookUrl, {
                 method: 'POST',
                 headers: {
@@ -94,8 +110,11 @@ class LeadAnalyzer {
                     username: username,
                     url: url,
                     training_data: this.trainingData
-                })
+                }),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error('Erro na resposta do servidor');
@@ -103,8 +122,9 @@ class LeadAnalyzer {
 
             const data = await response.json();
 
-            this.updateLoadingText('Analisando perfil com IA...');
-            await this.delay(1000);
+            // Complete progress animation
+            this.completeProgress();
+            await this.delay(500);
 
             this.displayResults(data);
             this.saveToHistory(data);
@@ -113,10 +133,13 @@ class LeadAnalyzer {
 
         } catch (error) {
             console.error('Error:', error);
+            this.stopProgressAnimation();
             this.showLoading(false);
 
-            // For demo/testing, show mock data
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            // Handle specific error types
+            if (error.name === 'AbortError') {
+                this.showToast('A análise demorou muito. Tente novamente.', 'error');
+            } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                 this.showToast('Modo demo: exibindo dados de exemplo', 'warning');
                 const mockData = this.generateMockData(username);
                 this.displayResults(mockData);
@@ -611,13 +634,101 @@ class LeadAnalyzer {
         if (show) {
             loading.classList.remove('hidden');
             results.classList.add('hidden');
+            this.resetProgress();
         } else {
             loading.classList.add('hidden');
+            this.stopProgressAnimation();
         }
     }
 
     updateLoadingText(text) {
         document.getElementById('loadingText').textContent = text;
+    }
+
+    // Progress Bar Methods
+    resetProgress() {
+        this.currentProgress = 0;
+        this.currentStep = 0;
+        this.updateProgressUI(0, 'Iniciando...');
+
+        // Reset step indicators
+        document.querySelectorAll('.progress-steps .step').forEach(step => {
+            step.classList.remove('active', 'completed');
+        });
+    }
+
+    startProgressAnimation() {
+        this.resetProgress();
+        this.currentStep = 0;
+
+        // Simulate progress through steps
+        this.progressInterval = setInterval(() => {
+            if (this.currentStep < this.progressSteps.length) {
+                const step = this.progressSteps[this.currentStep];
+                const targetProgress = step.maxProgress;
+
+                // Gradually increase progress
+                if (this.currentProgress < targetProgress) {
+                    // Slow down progress as we approach each step's max
+                    const increment = Math.max(0.3, (targetProgress - this.currentProgress) * 0.05);
+                    this.currentProgress = Math.min(this.currentProgress + increment, targetProgress);
+                    this.updateProgressUI(this.currentProgress, step.text);
+                    this.updateStepIndicators(step.step);
+                }
+
+                // Move to next step when current is near complete
+                if (this.currentProgress >= targetProgress - 1) {
+                    this.currentStep++;
+                }
+            }
+        }, 200);
+    }
+
+    stopProgressAnimation() {
+        if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+            this.progressInterval = null;
+        }
+    }
+
+    completeProgress() {
+        this.stopProgressAnimation();
+        this.currentProgress = 100;
+        this.updateProgressUI(100, 'Concluído!');
+
+        // Mark all steps as completed
+        document.querySelectorAll('.progress-steps .step').forEach(step => {
+            step.classList.remove('active');
+            step.classList.add('completed');
+        });
+    }
+
+    updateProgressUI(progress, text) {
+        const progressBar = document.getElementById('progressBar');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const progressStep = document.getElementById('progressStep');
+        const loadingText = document.getElementById('loadingText');
+
+        if (progressBar) progressBar.style.width = `${progress}%`;
+        if (progressPercentage) progressPercentage.textContent = `${Math.round(progress)}%`;
+        if (progressStep) progressStep.textContent = text;
+        if (loadingText) loadingText.textContent = text;
+    }
+
+    updateStepIndicators(currentStepNumber) {
+        document.querySelectorAll('.progress-steps .step').forEach(stepEl => {
+            const stepNum = parseInt(stepEl.dataset.step);
+
+            if (stepNum < currentStepNumber) {
+                stepEl.classList.remove('active');
+                stepEl.classList.add('completed');
+            } else if (stepNum === currentStepNumber) {
+                stepEl.classList.add('active');
+                stepEl.classList.remove('completed');
+            } else {
+                stepEl.classList.remove('active', 'completed');
+            }
+        });
     }
 
     showToast(message, type = 'info') {
