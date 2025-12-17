@@ -121,6 +121,13 @@ class LeadAnalyzer {
             }
 
             const data = await response.json();
+            console.log('Resposta do n8n:', data);
+
+            // Validate response structure
+            if (!data || !data.profile) {
+                console.error('Estrutura de resposta inválida:', data);
+                throw new Error('Resposta do servidor com formato inválido');
+            }
 
             // Complete progress animation
             this.completeProgress();
