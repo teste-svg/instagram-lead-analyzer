@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Lead Analyzer - Scrapping & Análise de Perfis</title>
+    <title>Lead Analyzer - Análise de Perfis do Instagram</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,11 +14,12 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="18" cy="6" r="1.5" fill="currentColor"/>
-                </svg>
+                <div class="logo-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </div>
                 <span>Lead Analyzer</span>
             </div>
 
@@ -30,29 +31,48 @@
                     </svg>
                     Analisar Perfil
                 </a>
-                <a href="#" class="nav-item" data-section="training">
+                <a href="#" class="nav-item" data-section="dashboard">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/>
-                        <path d="M2 12l10 5 10-5"/>
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
                     </svg>
-                    Treinar Agent
+                    Dashboard
                 </a>
                 <a href="#" class="nav-item" data-section="history">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12,6 12,12 16,14"/>
+                        <path d="M3 3v5h5"/>
+                        <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/>
+                        <path d="M12 7v5l4 2"/>
                     </svg>
                     Histórico
                 </a>
+                <a href="#" class="nav-item" data-section="training">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v4"/>
+                        <path d="m6.8 15-3.5 2"/>
+                        <path d="m20.7 17-3.5-2"/>
+                        <path d="M6.8 9 3.3 7"/>
+                        <path d="m20.7 7-3.5 2"/>
+                        <circle cx="12" cy="12" r="4"/>
+                    </svg>
+                    Treinar IA
+                </a>
                 <a href="#" class="nav-item" data-section="settings">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                         <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                     </svg>
                     Configurações
                 </a>
             </nav>
+
+            <button class="sidebar-toggle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m15 18-6-6 6-6"/>
+                </svg>
+            </button>
         </aside>
 
         <!-- Main Content -->
@@ -66,19 +86,31 @@
 
                 <div class="input-container">
                     <div class="input-wrapper">
-                        <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                         </svg>
-                        <input type="text" id="profileUrl" placeholder="https://instagram.com/username" />
+                        <input type="text" id="profileUrl" placeholder="https://instagram.com/username ou @username" />
                         <button id="scrapeBtn" class="btn-primary">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="11" cy="11" r="8"/>
                                 <path d="m21 21-4.35-4.35"/>
                             </svg>
                             Analisar
                         </button>
                     </div>
+                </div>
+
+                <div class="secondary-actions">
+                    <button class="btn-secondary" id="batchAnalysis">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Análise em Lote
+                    </button>
                 </div>
 
                 <!-- Loading State -->
@@ -91,12 +123,12 @@
 
                     <!-- Progress Bar -->
                     <div class="progress-container">
-                        <div class="progress-bar-wrapper">
-                            <div id="progressBar" class="progress-bar"></div>
-                        </div>
                         <div class="progress-info">
                             <span id="progressPercentage">0%</span>
                             <span id="progressStep">Iniciando...</span>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div id="progressBar" class="progress-bar"></div>
                         </div>
                     </div>
 
@@ -121,7 +153,7 @@
                                     <line x1="12" y1="3" x2="12" y2="15"/>
                                 </svg>
                             </div>
-                            <span>Extraindo Perfil</span>
+                            <span>Extraindo</span>
                         </div>
                         <div class="step" data-step="3">
                             <div class="step-icon">
@@ -131,17 +163,18 @@
                                     <polyline points="21,15 16,10 5,21"/>
                                 </svg>
                             </div>
-                            <span>Analisando Foto</span>
+                            <span>Foto</span>
                         </div>
                         <div class="step" data-step="4">
                             <div class="step-icon">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                    <path d="M2 17l10 5 10-5"/>
-                                    <path d="M2 12l10 5 10-5"/>
+                                    <path d="M12 2v4"/>
+                                    <path d="m6.8 15-3.5 2"/>
+                                    <path d="m20.7 17-3.5-2"/>
+                                    <circle cx="12" cy="12" r="4"/>
                                 </svg>
                             </div>
-                            <span>IA Processando</span>
+                            <span>IA</span>
                         </div>
                         <div class="step" data-step="5">
                             <div class="step-icon">
@@ -149,7 +182,7 @@
                                     <polyline points="20 6 9 17 4 12"/>
                                 </svg>
                             </div>
-                            <span>Finalizando</span>
+                            <span>Pronto</span>
                         </div>
                     </div>
                 </div>
@@ -160,7 +193,7 @@
                     <div class="result-card profile-card">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
                                 </svg>
@@ -174,7 +207,7 @@
                                     <h3 id="profileName">-</h3>
                                     <p id="profileUsername">@username</p>
                                     <div class="profile-stats">
-                                        <span><strong id="postsCount">0</strong> publicações</span>
+                                        <span><strong id="postsCount">0</strong> posts</span>
                                         <span><strong id="followersCount">0</strong> seguidores</span>
                                         <span><strong id="followingCount">0</strong> seguindo</span>
                                     </div>
@@ -186,13 +219,13 @@
                             </div>
                             <div class="extra-info">
                                 <div id="profileCategory" class="info-tag hidden">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                                     </svg>
                                     <span></span>
                                 </div>
                                 <div id="profileWebsite" class="info-tag hidden">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10"/>
                                         <line x1="2" y1="12" x2="22" y2="12"/>
                                         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -207,12 +240,12 @@
                     <div class="result-card">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                                     <circle cx="8.5" cy="8.5" r="1.5"/>
                                     <polyline points="21,15 16,10 5,21"/>
                                 </svg>
-                                Análise da Foto de Perfil
+                                Análise da Foto
                             </h2>
                         </div>
                         <div class="card-content">
@@ -224,18 +257,17 @@
                     <div class="result-card">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                                     <circle cx="9" cy="7" r="4"/>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                                 </svg>
                                 Pontos de Conexão
                             </h2>
                         </div>
                         <div class="card-content">
-                            <ul id="connectionPoints" class="connection-list">
-                            </ul>
+                            <ul id="connectionPoints" class="connection-list"></ul>
                         </div>
                     </div>
 
@@ -243,16 +275,15 @@
                     <div class="result-card">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="12" y1="1" x2="12" y2="23"/>
                                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                                 </svg>
-                                Oportunidades de Venda
+                                Oportunidades
                             </h2>
                         </div>
                         <div class="card-content">
-                            <ul id="salesOpportunities" class="opportunities-list">
-                            </ul>
+                            <ul id="salesOpportunities" class="opportunities-list"></ul>
                         </div>
                     </div>
 
@@ -260,21 +291,20 @@
                     <div class="result-card full-width">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
                                 Roteiro de Abordagem
                             </h2>
-                            <button id="copyScript" class="btn-icon" title="Copiar roteiro">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <button id="copyScript" class="btn-icon" title="Copiar">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                                 </svg>
                             </button>
                         </div>
                         <div class="card-content">
-                            <div id="approachScript" class="script-content">
-                            </div>
+                            <div id="approachScript" class="script-content"></div>
                         </div>
                     </div>
 
@@ -282,15 +312,14 @@
                     <div class="result-card full-width">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
                                 </svg>
                                 Guia de Conversa
                             </h2>
                         </div>
                         <div class="card-content">
-                            <div id="conversationGuide" class="guide-content">
-                            </div>
+                            <div id="conversationGuide" class="guide-content"></div>
                         </div>
                     </div>
 
@@ -298,35 +327,51 @@
                     <div class="result-card full-width summary-card">
                         <div class="card-header">
                             <h2>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                     <polyline points="14,2 14,8 20,8"/>
                                     <line x1="16" y1="13" x2="8" y2="13"/>
                                     <line x1="16" y1="17" x2="8" y2="17"/>
-                                    <polyline points="10,9 9,9 8,9"/>
                                 </svg>
                                 Resumo Executivo
                             </h2>
                         </div>
                         <div class="card-content">
-                            <div id="executiveSummary" class="summary-content">
-                            </div>
+                            <div id="executiveSummary" class="summary-content"></div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section">
+                <div class="section-header">
+                    <h1>Dashboard</h1>
+                    <p>Visão geral das suas análises e métricas</p>
+                </div>
+                <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <h3>Em breve</h3>
+                    <p>Dashboard com métricas e insights</p>
                 </div>
             </section>
 
             <!-- Training Section -->
             <section id="training" class="section">
                 <div class="section-header">
-                    <h1>Treinar Agent</h1>
-                    <p>Configure a personalidade e forma de comunicação do agent para gerar abordagens personalizadas</p>
+                    <h1>Treinar IA</h1>
+                    <p>Configure a personalidade e forma de comunicação para gerar abordagens personalizadas</p>
                 </div>
 
                 <div class="training-container">
                     <div class="training-card">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
@@ -342,13 +387,13 @@
                         </div>
                         <div class="form-group">
                             <label for="userNiche">Nicho de Atuação</label>
-                            <input type="text" id="userNiche" placeholder="Ex: Marketing Digital, Fitness, Educação...">
+                            <input type="text" id="userNiche" placeholder="Ex: Marketing Digital, Fitness...">
                         </div>
                     </div>
 
                     <div class="training-card">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                             </svg>
                             Estilo de Comunicação
@@ -377,21 +422,21 @@
 
                     <div class="training-card full-width">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
                             </svg>
-                            Exemplos de Mensagens (Opcional)
+                            Exemplos de Mensagens
                         </h3>
-                        <p class="form-hint">Cole exemplos de mensagens que você já enviou para leads. Isso ajuda o agent a aprender seu estilo único.</p>
+                        <p class="form-hint">Cole exemplos de mensagens que você já enviou. Isso ajuda a IA a aprender seu estilo.</p>
                         <div class="form-group">
-                            <label for="messageExamples">Suas Mensagens de Exemplo</label>
-                            <textarea id="messageExamples" rows="6" placeholder="Cole aqui exemplos de mensagens que você costuma enviar para novos leads..."></textarea>
+                            <label for="messageExamples">Suas Mensagens</label>
+                            <textarea id="messageExamples" rows="4" placeholder="Cole aqui exemplos de mensagens..."></textarea>
                         </div>
                     </div>
 
                     <div class="training-card full-width">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/>
                                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
                                 <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -399,34 +444,34 @@
                             Informações Adicionais
                         </h3>
                         <div class="form-group">
-                            <label for="valueProposition">Sua Proposta de Valor Principal</label>
-                            <textarea id="valueProposition" rows="3" placeholder="O que diferencia você da concorrência? Qual transformação você entrega?"></textarea>
+                            <label for="valueProposition">Sua Proposta de Valor</label>
+                            <textarea id="valueProposition" rows="2" placeholder="O que diferencia você?"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="targetAudience">Público-Alvo Ideal</label>
-                            <textarea id="targetAudience" rows="3" placeholder="Descreva seu cliente ideal: dores, desejos, características..."></textarea>
+                            <label for="targetAudience">Público-Alvo</label>
+                            <textarea id="targetAudience" rows="2" placeholder="Descreva seu cliente ideal"></textarea>
                         </div>
                         <div class="form-group">
                             <label for="avoidTopics">Tópicos a Evitar</label>
-                            <textarea id="avoidTopics" rows="2" placeholder="Há algo que você nunca menciona nas abordagens?"></textarea>
+                            <input type="text" id="avoidTopics" placeholder="O que nunca mencionar">
                         </div>
                     </div>
 
                     <div class="training-actions">
+                        <button id="resetTraining" class="btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                <path d="M3 3v5h5"/>
+                            </svg>
+                            Resetar
+                        </button>
                         <button id="saveTraining" class="btn-primary">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                                 <polyline points="17,21 17,13 7,13 7,21"/>
                                 <polyline points="7,3 7,8 15,8"/>
                             </svg>
-                            Salvar Configurações
-                        </button>
-                        <button id="resetTraining" class="btn-secondary">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="1,4 1,10 7,10"/>
-                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-                            </svg>
-                            Resetar
+                            Salvar
                         </button>
                     </div>
                 </div>
@@ -435,18 +480,18 @@
             <!-- History Section -->
             <section id="history" class="section">
                 <div class="section-header">
-                    <h1>Histórico de Análises</h1>
-                    <p>Visualize todas as análises de perfis realizadas anteriormente</p>
+                    <h1>Histórico</h1>
+                    <p>Todas as análises realizadas anteriormente</p>
                 </div>
 
                 <div id="historyList" class="history-list">
                     <div class="empty-state">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <circle cx="12" cy="12" r="10"/>
                             <polyline points="12,6 12,12 16,14"/>
                         </svg>
                         <h3>Nenhuma análise ainda</h3>
-                        <p>As análises de perfis aparecerão aqui</p>
+                        <p>As análises aparecerão aqui</p>
                     </div>
                 </div>
             </section>
@@ -455,19 +500,19 @@
             <section id="settings" class="section">
                 <div class="section-header">
                     <h1>Configurações</h1>
-                    <p>Configure as integrações e preferências do sistema</p>
+                    <p>Configure as integrações e preferências</p>
                 </div>
 
                 <div class="settings-container">
                     <div class="settings-card">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                             </svg>
                             Integração n8n
                         </h3>
                         <div class="form-group">
-                            <label for="n8nWebhook">URL do Webhook n8n</label>
+                            <label for="n8nWebhook">URL do Webhook</label>
                             <input type="text" id="n8nWebhook" placeholder="https://seu-n8n.com/webhook/...">
                         </div>
                         <button id="testN8n" class="btn-secondary">Testar Conexão</button>
@@ -475,45 +520,46 @@
 
                     <div class="settings-card">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
                             </svg>
                             API Keys
                         </h3>
                         <div class="form-group">
-                            <label for="openaiKey">OpenAI API Key (para análise de imagens)</label>
+                            <label for="openaiKey">OpenAI API Key</label>
                             <input type="password" id="openaiKey" placeholder="sk-...">
                         </div>
                     </div>
 
                     <div class="settings-card">
                         <h3>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            Dados Exportados
-                        </h3>
-                        <button id="exportData" class="btn-secondary">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7,10 12,15 17,10"/>
+                                <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Exportar Todos os Dados
+                            Dados
+                        </h3>
+                        <button id="exportData" class="btn-secondary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Exportar
                         </button>
                         <button id="clearData" class="btn-danger">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3,6 5,6 21,6"/>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             </svg>
-                            Limpar Todos os Dados
+                            Limpar
                         </button>
                     </div>
 
                     <div class="settings-actions">
                         <button id="saveSettings" class="btn-primary">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                                 <polyline points="17,21 17,13 7,13 7,21"/>
                                 <polyline points="7,3 7,8 15,8"/>
