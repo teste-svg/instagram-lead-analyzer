@@ -149,7 +149,7 @@
         "url": "=https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=YOUR_APIFY_TOKEN_HERE",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"usernames\": [\"{{ $json.username }}\"],\n  \"resultsLimit\": 6\n}",
+        "jsonBody": "={\n  \"usernames\": [\"{{ $json.username }}\"],\n  \"resultsLimit\": 15\n}",
         "options": {
           "timeout": 120000
         }
