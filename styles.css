@@ -499,25 +499,58 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.loading-state > p {
+.loading-state>p {
     color: var(--text-secondary);
     font-size: 14px;
 }
 
-/* Results Container */
+/* Results Container - Improved Centered Layout */
 .results-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .results-container.hidden {
     display: none;
+}
+
+/* Results Row - for side-by-side cards */
+.results-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* Full Width Row */
+.results-row.full-width,
+.full-width-row {
+    grid-template-columns: 1fr;
+}
+
+/* Profile + Cards Row */
+.results-header-row {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Inspirational Cards Stack */
+.inspirational-cards-stack {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 16px;
 }
 
 /* Result Cards */
@@ -1081,6 +1114,7 @@ body {
 
 /* Responsive */
 @media (max-width: 1200px) {
+
     .results-container,
     .training-container,
     .settings-container {
@@ -1136,6 +1170,19 @@ body {
 
     .progress-steps {
         display: none;
+    }
+
+    /* Mobile responsive for new layout */
+    .results-header-row {
+        grid-template-columns: 1fr;
+    }
+
+    .results-row {
+        grid-template-columns: 1fr;
+    }
+
+    .inspirational-cards-stack {
+        grid-template-columns: 1fr;
     }
 }
 
