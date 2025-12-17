@@ -378,6 +378,27 @@
                         </div>
                     </div>
 
+                    <!-- Lead Interests Card -->
+                    <div class="result-card full-width interests-card">
+                        <div class="card-header">
+                            <h2>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                </svg>
+                                Interesses do Lead
+                            </h2>
+                            <span class="card-badge">Identificados pela IA</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="interests-grid" id="leadInterestsGrid">
+                                <!-- Populated by JS -->
+                            </div>
+                            <p class="interests-empty hidden" id="noInterestsMessage">Nenhum interesse específico
+                                identificado</p>
+                        </div>
+                    </div>
 
                     <!-- Conversation Continuation Card -->
                     <div class="result-card full-width conversation-card">
@@ -546,6 +567,39 @@
                             <div class="form-group">
                                 <label for="userNiche">Nicho de Atuação</label>
                                 <input type="text" id="userNiche" placeholder="Ex: Marketing Digital, Fitness...">
+                            </div>
+                        </div>
+
+                        <div class="training-card">
+                            <h3>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 2v4" />
+                                    <path d="m6.8 15-3.5 2" />
+                                    <path d="m20.7 17-3.5-2" />
+                                    <circle cx="12" cy="12" r="4" />
+                                </svg>
+                                Sobre seu Trabalho
+                            </h3>
+                            <div class="form-group">
+                                <label for="whatYouDo">O que você faz?</label>
+                                <textarea id="whatYouDo" rows="2"
+                                    placeholder="Descreva seu serviço ou produto em detalhes"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="whatYouDeliver">O que você entrega?</label>
+                                <textarea id="whatYouDeliver" rows="2"
+                                    placeholder="Qual resultado/transformação o cliente recebe?"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="problemYouSolve">Qual problema você resolve?</label>
+                                <textarea id="problemYouSolve" rows="2"
+                                    placeholder="Qual dor ou necessidade você atende?"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="yourMethodology">Sua metodologia ou diferencial</label>
+                                <textarea id="yourMethodology" rows="2"
+                                    placeholder="O que torna seu trabalho único?"></textarea>
                             </div>
                         </div>
 
