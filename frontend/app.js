@@ -162,6 +162,7 @@ class LeadAnalyzer {
         this.bindTraining();
         this.bindSettings();
         this.bindConversation();
+        this.bindMessageBuilder();
         this.loadSavedData();
         this.renderHistory();
         this.updateExpertCards();
@@ -654,6 +655,9 @@ class LeadAnalyzer {
         // Populate lead interests card
         this.populateLeadInterests(data.lead_interests || []);
 
+        // Populate message builder chips with lead data
+        this.populateBuilderChips(data);
+
         // Populate reels and posts carousels separately
         const allPosts = data.posts_analyzed || data.recent_posts || [];
         this.populateReelsCarousel(allPosts);
@@ -704,8 +708,10 @@ class LeadAnalyzer {
 
         if (!messages || !messages.length) {
             container.innerHTML = `
-                <div class="message-item" style="opacity: 0.6;">
-                    <div class="message-label">⚠️ CONFIGURE A IA</div>
+                <div class="message-item-enhanced" style="opacity: 0.6;">
+                    <div class="message-header">
+                        <span class="message-label">⚠️ CONFIGURE A IA</span>
+                    </div>
                     <div class="message-text">Vá em "Treinar IA" e preencha seus exemplos de mensagens</div>
                 </div>
             `;
@@ -713,12 +719,27 @@ class LeadAnalyzer {
         }
 
         container.innerHTML = messages.map((m, i) => `
-            <div class="message-item">
-                <div class="message-label">${m.label}</div>
+            <div class="message-item-enhanced">
+                <div class="message-header">
+                    <span class="message-label">${m.label}</span>
+                </div>
                 <div class="message-text">${m.text}</div>
-                <button class="copy-message-btn" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText); this.classList.add('copied'); this.innerHTML='✓ Copiado!'; setTimeout(() => { this.classList.remove('copied'); this.innerHTML='📋 Copiar'; }, 2000)">
-                    📋 Copiar
-                </button>
+                <div class="message-actions">
+                    <button class="btn-copy" onclick="app.copyMessageText(this, '${m.text.replace(/'/g, "\\'")}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        Copiar
+                    </button>
+                    <button class="btn-use" onclick="app.useMessageInBuilder('${m.text.replace(/'/g, "\\'")}')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Usar no Compositor
+                    </button>
+                </div>
             </div>
         `).join('');
     }
@@ -1586,6 +1607,230 @@ class LeadAnalyzer {
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // =============================================
+    // MESSAGE BUILDER FUNCTIONS
+    // =============================================
+
+    bindMessageBuilder() {
+        // Bind chip selection
+        document.querySelectorAll('.variable-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => this.handleChipSelection(e.target));
+        });
+
+        // Bind compose actions
+        const clearBtn = document.getElementById('clearCompose');
+        const copyBtn = document.getElementById('copyComposedMessage');
+        const generateMoreBtn = document.getElementById('generateMoreMessages');
+
+        if (clearBtn) clearBtn.addEventListener('click', () => this.clearComposer());
+        if (copyBtn) copyBtn.addEventListener('click', () => this.copyComposedMessage());
+        if (generateMoreBtn) generateMoreBtn.addEventListener('click', () => this.generateMoreMessages());
+
+        // Initialize composer state
+        this.composerState = {
+            greeting: '',
+            hook: '',
+            interest: '',
+            question: ''
+        };
+    }
+
+    handleChipSelection(chip) {
+        const type = chip.dataset.type;
+        const value = chip.dataset.value;
+
+        // Remove selection from same category
+        const container = chip.parentElement;
+        container.querySelectorAll('.variable-chip').forEach(c => c.classList.remove('selected'));
+
+        // Select this chip
+        chip.classList.add('selected');
+
+        // Update state
+        this.composerState[type] = value;
+
+        // Update preview and textarea
+        this.updateComposer();
+    }
+
+    updateComposer() {
+        const preview = document.getElementById('composePreview');
+        const textarea = document.getElementById('composedMessage');
+
+        if (!preview || !textarea) return;
+
+        // Build message parts
+        const parts = [];
+        const leadName = this.currentLeadData?.profile?.full_name?.split(' ')[0] || 'Nome';
+
+        if (this.composerState.greeting) {
+            const greeting = this.composerState.greeting.replace('{nome}', leadName);
+            parts.push({ type: 'greeting', text: greeting });
+        }
+        if (this.composerState.hook) {
+            parts.push({ type: 'hook', text: this.composerState.hook });
+        }
+        if (this.composerState.interest) {
+            parts.push({ type: 'interest', text: this.composerState.interest });
+        }
+        if (this.composerState.question) {
+            parts.push({ type: 'question', text: this.composerState.question });
+        }
+
+        // Update preview with styled chips
+        if (parts.length === 0) {
+            preview.innerHTML = '<span class="placeholder-text">Selecione os elementos acima para compor sua mensagem...</span>';
+        } else {
+            preview.innerHTML = parts.map(p =>
+                `<span class="chip-tag ${p.type}">${p.text}</span>`
+            ).join(' ');
+        }
+
+        // Update textarea with plain text
+        const message = parts.map(p => p.text).join(' ');
+        textarea.value = message;
+    }
+
+    populateBuilderChips(data) {
+        // Populate hook chips based on lead profile
+        const hookContainer = document.getElementById('hookChips');
+        if (hookContainer) {
+            const profile = data.profile || {};
+            const hooks = [];
+
+            // Generate hooks based on profile data
+            if (profile.bio) {
+                const bioSnippet = profile.bio.substring(0, 50);
+                hooks.push({ label: '📝 Bio', value: `vi que ${bioSnippet}...` });
+            }
+            if (profile.category && profile.category !== 'Pessoal') {
+                hooks.push({ label: `🏢 ${profile.category}`, value: `vi que trabalha com ${profile.category.toLowerCase()},` });
+            }
+            if (profile.followers > 10000) {
+                hooks.push({ label: '📈 Audiência', value: `vi que tem uma boa audiência por aqui,` });
+            }
+            if (profile.full_name) {
+                const firstName = profile.full_name.split(' ')[0];
+                hooks.push({ label: '👋 Seguiu', value: `vi que me seguiu, seja bem-vindo por aqui ${firstName}!` });
+            }
+
+            if (hooks.length === 0) {
+                hooks.push({ label: '👁️ Perfil', value: 'vi seu perfil por aqui,' });
+            }
+
+            hookContainer.innerHTML = hooks.map(h =>
+                `<button class="variable-chip hook-chip" data-type="hook" data-value="${h.value}">${h.label}</button>`
+            ).join('');
+        }
+
+        // Populate interest chips based on lead_interests
+        const interestContainer = document.getElementById('interestChips');
+        if (interestContainer) {
+            const interests = data.lead_interests || [];
+
+            if (interests.length === 0) {
+                interestContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">Nenhum interesse identificado ainda</span>';
+            } else {
+                interestContainer.innerHTML = interests.map(i =>
+                    `<button class="variable-chip interest-chip" data-type="interest" data-value="${i.conversation_starter || i.detail}">${i.category}: ${i.detail}</button>`
+                ).join('');
+            }
+        }
+
+        // Rebind chips after dynamic population
+        document.querySelectorAll('.variable-chip').forEach(chip => {
+            chip.addEventListener('click', (e) => this.handleChipSelection(e.target));
+        });
+    }
+
+    clearComposer() {
+        this.composerState = {
+            greeting: '',
+            hook: '',
+            interest: '',
+            question: ''
+        };
+
+        // Remove all selections
+        document.querySelectorAll('.variable-chip.selected').forEach(c => c.classList.remove('selected'));
+
+        // Clear preview and textarea
+        this.updateComposer();
+        this.showToast('Compositor limpo!', 'info');
+    }
+
+    copyComposedMessage() {
+        const textarea = document.getElementById('composedMessage');
+        if (!textarea || !textarea.value.trim()) {
+            this.showToast('Nenhuma mensagem para copiar', 'error');
+            return;
+        }
+
+        navigator.clipboard.writeText(textarea.value);
+        this.showToast('Mensagem copiada!', 'success');
+    }
+
+    copyMessageText(button, text) {
+        navigator.clipboard.writeText(text);
+        button.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Copiado!`;
+        setTimeout(() => {
+            button.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar`;
+        }, 2000);
+    }
+
+    useMessageInBuilder(text) {
+        const textarea = document.getElementById('composedMessage');
+        if (textarea) {
+            textarea.value = text;
+            // Scroll to builder
+            document.querySelector('.message-builder-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            this.showToast('Mensagem carregada no compositor!', 'success');
+        }
+    }
+
+    async generateMoreMessages() {
+        if (!this.currentLeadData) {
+            this.showToast('Analise um lead primeiro', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('generateMoreMessages');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> Gerando...`;
+        }
+
+        try {
+            // Re-analyze with same data but request variations
+            const response = await fetch(this.n8nWebhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...this.currentLeadData,
+                    request_type: 'regenerate_messages',
+                    training_data: this.trainingData
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.messages && result.messages.length > 0) {
+                this.populateMessages(result.messages);
+                this.showToast('Novas mensagens geradas!', 'success');
+            } else {
+                this.showToast('Não foi possível gerar novas mensagens', 'error');
+            }
+        } catch (error) {
+            console.error('Error generating messages:', error);
+            this.showToast('Erro ao gerar mensagens: ' + error.message, 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> Gerar Mais`;
+            }
+        }
     }
 }
 
