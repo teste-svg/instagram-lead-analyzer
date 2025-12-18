@@ -894,26 +894,37 @@ class LeadAnalyzer {
             return;
         }
 
-        track.innerHTML = reels.map(reel => `
+        track.innerHTML = reels.map((reel, index) => {
+            // Get the caption for display
+            const caption = reel.caption || reel.summary || 'Conteúdo de vídeo';
+            const shortCaption = caption.length > 60 ? caption.substring(0, 60) + '...' : caption;
+
+            // Try to get thumbnail via proxy if direct URL fails
+            const thumbnailUrl = reel.thumbnail || reel.displayUrl || '';
+            const proxyUrl = thumbnailUrl ? `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=300&h=300&fit=cover` : '';
+
+            return `
             <div class="content-thumbnail-card">
                 <div class="thumbnail-image">
-                    ${reel.thumbnail || reel.displayUrl ?
-                `<img src="${reel.thumbnail || reel.displayUrl}" alt="Reel" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>🎬</div>'">` :
-                `<div class="thumbnail-placeholder">🎬</div>`
-            }
+                    ${proxyUrl ?
+                    `<img src="${proxyUrl}" alt="Reel" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div class="thumbnail-placeholder" style="display:none;">🎬</div>` :
+                    `<div class="thumbnail-placeholder">🎬</div>`
+                }
                     <span class="content-type-badge reel">Reel</span>
                 </div>
                 <div class="content-info">
-                    <p class="content-title">${reel.summary || reel.caption?.substring(0, 60) || 'Conteúdo de vídeo'}</p>
+                    <p class="content-title">${shortCaption}</p>
                     <ul class="content-bullets">
-                        ${reel.opportunity ? `<li class="opportunity">${reel.opportunity}</li>` : ''}
-                        ${reel.connection_point ? `<li class="connection">${reel.connection_point}</li>` : ''}
-                        ${reel.engagement ? `<li>❤️ ${reel.engagement} engajamento</li>` : ''}
-                        ${!reel.opportunity && !reel.connection_point ? `<li>Analisar para oportunidades</li>` : ''}
+                        ${reel.insight ? `<li class="insight">💡 ${reel.insight}</li>` : ''}
+                        ${reel.opportunity ? `<li class="opportunity">🎯 ${reel.opportunity}</li>` : ''}
+                        ${reel.theme ? `<li class="theme">🏷️ Tema: ${reel.theme}</li>` : ''}
+                        ${reel.engagement ? `<li class="engagement">❤️ ${reel.engagement} engajamento</li>` : ''}
+                        ${!reel.insight && !reel.opportunity && !reel.theme ? `<li class="pending">📊 Analisar para oportunidades</li>` : ''}
                     </ul>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     populatePostsCarousel(posts) {
@@ -942,26 +953,37 @@ class LeadAnalyzer {
             return;
         }
 
-        track.innerHTML = imagePosts.slice(0, 5).map(post => `
+        track.innerHTML = imagePosts.slice(0, 5).map((post, index) => {
+            // Get the caption for display
+            const caption = post.caption || post.summary || 'Publicação';
+            const shortCaption = caption.length > 60 ? caption.substring(0, 60) + '...' : caption;
+
+            // Try to get thumbnail via proxy if direct URL fails
+            const thumbnailUrl = post.thumbnail || post.displayUrl || '';
+            const proxyUrl = thumbnailUrl ? `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=300&h=300&fit=cover` : '';
+
+            return `
             <div class="content-thumbnail-card">
                 <div class="thumbnail-image">
-                    ${post.thumbnail || post.displayUrl ?
-                `<img src="${post.thumbnail || post.displayUrl}" alt="Post" onerror="this.parentElement.innerHTML='<div class=\\'thumbnail-placeholder\\'>📸</div>'">` :
-                `<div class="thumbnail-placeholder">📸</div>`
-            }
+                    ${proxyUrl ?
+                    `<img src="${proxyUrl}" alt="Post" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div class="thumbnail-placeholder" style="display:none;">📸</div>` :
+                    `<div class="thumbnail-placeholder">📸</div>`
+                }
                     <span class="content-type-badge post">Post</span>
                 </div>
                 <div class="content-info">
-                    <p class="content-title">${post.summary || post.caption?.substring(0, 60) || 'Publicação'}</p>
+                    <p class="content-title">${shortCaption}</p>
                     <ul class="content-bullets">
-                        ${post.connection_point ? `<li class="connection">${post.connection_point}</li>` : ''}
-                        ${post.opportunity ? `<li class="opportunity">${post.opportunity}</li>` : ''}
-                        ${post.theme ? `<li>🎯 Tema: ${post.theme}</li>` : ''}
-                        ${!post.connection_point && !post.opportunity ? `<li>Ponto de conexão potencial</li>` : ''}
+                        ${post.insight ? `<li class="insight">💡 ${post.insight}</li>` : ''}
+                        ${post.opportunity ? `<li class="opportunity">🎯 ${post.opportunity}</li>` : ''}
+                        ${post.theme ? `<li class="theme">🏷️ Tema: ${post.theme}</li>` : ''}
+                        ${post.engagement ? `<li class="engagement">❤️ ${post.engagement} engajamento</li>` : ''}
+                        ${!post.insight && !post.opportunity && !post.theme ? `<li class="pending">📊 Ponto de conexão potencial</li>` : ''}
                     </ul>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     scrollCarousel(type, direction) {
