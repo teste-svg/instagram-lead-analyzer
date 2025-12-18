@@ -918,6 +918,67 @@
         </main>
     </div>
 
+    <!-- Reel Detail Modal -->
+    <div id="reelModal" class="modal-overlay hidden">
+        <div class="modal-content reel-modal">
+            <button class="modal-close" onclick="app.closeReelModal()">&times;</button>
+
+            <div class="reel-modal-grid">
+                <!-- Video Section -->
+                <div class="reel-video-section">
+                    <div class="reel-embed-container" id="reelEmbedContainer">
+                        <div class="reel-placeholder">
+                            <img id="reelModalThumbnail" src="" alt="Reel thumbnail">
+                            <a id="reelExternalLink" href="#" target="_blank" class="btn-watch-reel">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                Ver no Instagram
+                            </a>
+                        </div>
+                    </div>
+                    <div class="reel-engagement">
+                        <span>❤️ <strong id="reelModalLikes">0</strong></span>
+                        <span>💬 <strong id="reelModalComments">0</strong></span>
+                    </div>
+                </div>
+
+                <!-- Details Section -->
+                <div class="reel-details-section">
+                    <h3 id="reelModalTitle">Análise do Reel</h3>
+
+                    <div class="reel-detail-block">
+                        <h4>📝 Resumo</h4>
+                        <p id="reelModalSummary">Carregando...</p>
+                    </div>
+
+                    <div class="reel-detail-block">
+                        <h4>💡 Insight</h4>
+                        <p id="reelModalInsight">Carregando...</p>
+                    </div>
+
+                    <div class="reel-detail-block">
+                        <h4>🎯 Ponto de Conexão</h4>
+                        <p id="reelModalConnection">Carregando...</p>
+                    </div>
+
+                    <div class="reel-detail-block">
+                        <h4>❤️ Interesses Identificados Neste Reel</h4>
+                        <div id="reelModalInterests" class="reel-interests-list">
+                            <!-- Interests will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="reel-detail-block">
+                        <h4>📋 Legenda Original</h4>
+                        <p id="reelModalCaption" class="reel-caption-text">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toastMessage"></span>

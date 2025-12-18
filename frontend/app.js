@@ -983,6 +983,9 @@ class LeadAnalyzer {
             return;
         }
 
+        // Store reels data for modal access
+        this.currentReels = reels;
+
         track.innerHTML = reels.map((reel, index) => {
             // Get the caption for display
             const caption = reel.caption || reel.summary || 'Conteúdo de vídeo';
@@ -992,8 +995,16 @@ class LeadAnalyzer {
             const thumbnailUrl = reel.thumbnail || reel.displayUrl || '';
             const proxyUrl = thumbnailUrl ? `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=300&h=300&fit=cover` : '';
 
+            // Extract inline interests from this reel's content
+            const reelInterests = this.extractInterestsFromReel(reel);
+            const interestsHTML = reelInterests.length > 0
+                ? `<div class="reel-interests-preview">
+                    ${reelInterests.slice(0, 3).map(i => `<span class="reel-interest-mini">${i}</span>`).join('')}
+                   </div>`
+                : '';
+
             return `
-            <div class="content-thumbnail-card">
+            <div class="content-thumbnail-card" onclick="app.openReelModal(${index}, 'reel')">
                 <div class="thumbnail-image">
                     ${proxyUrl ?
                     `<img src="${proxyUrl}" alt="Reel" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -1006,14 +1017,95 @@ class LeadAnalyzer {
                     <p class="content-title">${shortCaption}</p>
                     <ul class="content-bullets">
                         ${reel.insight ? `<li class="insight">💡 ${reel.insight}</li>` : ''}
-                        ${reel.opportunity ? `<li class="opportunity">🎯 ${reel.opportunity}</li>` : ''}
-                        ${reel.theme ? `<li class="theme">🏷️ Tema: ${reel.theme}</li>` : ''}
+                        ${reel.connection_point || reel.opportunity ? `<li class="opportunity">🎯 ${reel.connection_point || reel.opportunity}</li>` : ''}
                         ${reel.engagement ? `<li class="engagement">❤️ ${reel.engagement} engajamento</li>` : ''}
-                        ${!reel.insight && !reel.opportunity && !reel.theme ? `<li class="pending">📊 Analisar para oportunidades</li>` : ''}
+                        ${!reel.insight && !reel.opportunity && !reel.connection_point ? `<li class="pending">👆 Clique para ver análise</li>` : ''}
                     </ul>
+                    ${interestsHTML}
                 </div>
             </div>
         `}).join('');
+    }
+
+    // Extract interests from a single reel's caption and analysis
+    extractInterestsFromReel(reel) {
+        const interests = [];
+        const caption = (reel.caption || '').toLowerCase();
+
+        const keywords = {
+            'mounjaro': '💊 Mounjaro',
+            'ozempic': '💊 Ozempic',
+            'emagrecimento': '⚖️ Emagrecimento',
+            'cristo': '✝️ Fé',
+            'cristã': '✝️ Cristã',
+            'deus': '✝️ Fé',
+            'filh': '👧 Família',
+            'marid': '💍 Casada',
+            'esposo': '💍 Casada',
+            'mãe': '👩‍👧 Mãe',
+            'fertil': '🤰 Fertilidade',
+            'menopausa': '🌺 Menopausa',
+            'saúde': '❤️‍🩹 Saúde',
+            'médic': '👩‍⚕️ Medicina',
+            'viag': '✈️ Viagem',
+            'treino': '💪 Fitness'
+        };
+
+        for (const [key, value] of Object.entries(keywords)) {
+            if (caption.includes(key) && !interests.includes(value)) {
+                interests.push(value);
+            }
+        }
+
+        return interests;
+    }
+
+    // Open reel detail modal
+    openReelModal(index, type = 'reel') {
+        const reels = type === 'reel' ? this.currentReels : this.currentPosts;
+        if (!reels || !reels[index]) return;
+
+        const reel = reels[index];
+        const modal = document.getElementById('reelModal');
+
+        // Populate modal content
+        const thumbnailUrl = reel.thumbnail || reel.displayUrl || '';
+        const proxyUrl = thumbnailUrl ? `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=600&h=600&fit=cover` : '';
+
+        document.getElementById('reelModalThumbnail').src = proxyUrl;
+        document.getElementById('reelModalTitle').textContent = type === 'reel' ? 'Análise do Reel' : 'Análise do Post';
+        document.getElementById('reelModalSummary').textContent = reel.summary || reel.theme || 'Resumo não disponível';
+        document.getElementById('reelModalInsight').textContent = reel.insight || 'Insight não identificado';
+        document.getElementById('reelModalConnection').textContent = reel.connection_point || reel.opportunity || 'Ponto de conexão não identificado';
+        document.getElementById('reelModalCaption').textContent = reel.caption || 'Legenda não disponível';
+        document.getElementById('reelModalLikes').textContent = reel.likes || 0;
+        document.getElementById('reelModalComments').textContent = reel.comments || 0;
+
+        // Build Instagram URL
+        const username = this.lastAnalyzedData?.profile?.username || '';
+        document.getElementById('reelExternalLink').href = `https://instagram.com/${username}`;
+
+        // Populate interests from this reel
+        const interests = this.extractInterestsFromReel(reel);
+        const interestsContainer = document.getElementById('reelModalInterests');
+        if (interests.length > 0) {
+            interestsContainer.innerHTML = interests.map(i =>
+                `<span class="reel-interest-tag">${i}</span>`
+            ).join('');
+        } else {
+            interestsContainer.innerHTML = '<span style="color: var(--text-muted);">Nenhum interesse específico identificado neste reel</span>';
+        }
+
+        // Show modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close reel modal
+    closeReelModal() {
+        const modal = document.getElementById('reelModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
     }
 
     populatePostsCarousel(posts) {
@@ -1042,7 +1134,10 @@ class LeadAnalyzer {
             return;
         }
 
-        track.innerHTML = imagePosts.slice(0, 5).map((post, index) => {
+        // Store posts data for modal access
+        this.currentPosts = imagePosts;
+
+        track.innerHTML = imagePosts.map((post, index) => {
             // Get the caption for display
             const caption = post.caption || post.summary || 'Publicação';
             const shortCaption = caption.length > 60 ? caption.substring(0, 60) + '...' : caption;
@@ -1051,8 +1146,16 @@ class LeadAnalyzer {
             const thumbnailUrl = post.thumbnail || post.displayUrl || '';
             const proxyUrl = thumbnailUrl ? `https://images.weserv.nl/?url=${encodeURIComponent(thumbnailUrl)}&w=300&h=300&fit=cover` : '';
 
+            // Extract inline interests
+            const postInterests = this.extractInterestsFromReel(post);
+            const interestsHTML = postInterests.length > 0
+                ? `<div class="reel-interests-preview">
+                    ${postInterests.slice(0, 3).map(i => `<span class="reel-interest-mini">${i}</span>`).join('')}
+                   </div>`
+                : '';
+
             return `
-            <div class="content-thumbnail-card">
+            <div class="content-thumbnail-card" onclick="app.openReelModal(${index}, 'post')">
                 <div class="thumbnail-image">
                     ${proxyUrl ?
                     `<img src="${proxyUrl}" alt="Post" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -1065,11 +1168,11 @@ class LeadAnalyzer {
                     <p class="content-title">${shortCaption}</p>
                     <ul class="content-bullets">
                         ${post.insight ? `<li class="insight">💡 ${post.insight}</li>` : ''}
-                        ${post.opportunity ? `<li class="opportunity">🎯 ${post.opportunity}</li>` : ''}
-                        ${post.theme ? `<li class="theme">🏷️ Tema: ${post.theme}</li>` : ''}
+                        ${post.connection_point || post.opportunity ? `<li class="opportunity">🎯 ${post.connection_point || post.opportunity}</li>` : ''}
                         ${post.engagement ? `<li class="engagement">❤️ ${post.engagement} engajamento</li>` : ''}
-                        ${!post.insight && !post.opportunity && !post.theme ? `<li class="pending">📊 Ponto de conexão potencial</li>` : ''}
+                        ${!post.insight && !post.opportunity && !post.connection_point ? `<li class="pending">👆 Clique para ver análise</li>` : ''}
                     </ul>
+                    ${interestsHTML}
                 </div>
             </div>
         `}).join('');
