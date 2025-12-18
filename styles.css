@@ -2648,11 +2648,30 @@ body {
 }
 
 .interests-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
+.interest-bullet {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    padding: 8px 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+
+.interest-bullet:hover {
+    border-color: var(--accent-orange);
+    background: rgba(255, 138, 76, 0.1);
+}
+
+/* Legacy support for old format */
 .interest-item {
     background: var(--bg-input);
     border: 1px solid var(--border-color);

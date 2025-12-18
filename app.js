@@ -864,15 +864,32 @@ class LeadAnalyzer {
 
         if (emptyMsg) emptyMsg.classList.add('hidden');
 
-        grid.innerHTML = interestsArray.map(interest => `
-            <div class="interest-item">
-                <div class="interest-item-header">
-                    <span class="interest-category">${interest.category || 'Interesse'}</span>
-                </div>
-                <div class="interest-detail">${interest.detail || 'Não especificado'}</div>
-                <div class="interest-starter">${interest.conversation_starter || 'Explore esse tema na conversa'}</div>
-            </div>
-        `).join('');
+        // Map category to emoji
+        const categoryEmojis = {
+            'Profissão': '💼',
+            'Especialização': '🎯',
+            'Valores': '✝️',
+            'Religião': '✝️',
+            'Família': '👨‍👩‍👧',
+            'Filhos': '👧',
+            'Casamento': '💍',
+            'Conteúdo': '📱',
+            'Lifestyle': '🌟',
+            'Interesse': '❤️',
+            'Hobby': '🎨'
+        };
+
+        grid.innerHTML = interestsArray.map(interest => {
+            // Handle both object format and simple string format
+            if (typeof interest === 'string') {
+                return `<div class="interest-bullet">❤️ ${interest}</div>`;
+            }
+
+            const emoji = categoryEmojis[interest.category] || '💡';
+            const text = interest.detail || interest.text || interest;
+
+            return `<div class="interest-bullet">${emoji} ${text}</div>`;
+        }).join('');
     }
 
     // Fallback: Extract interests from profile, bio_analysis and content_analysis
