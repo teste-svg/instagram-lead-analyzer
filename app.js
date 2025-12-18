@@ -652,10 +652,17 @@ class LeadAnalyzer {
         // Populate deep analysis sections
         this.populateBioAnalysis(data.bio_analysis || data.profile?.bio || '', data.gender || 'unknown');
 
-        // Populate lead interests card
-        this.populateLeadInterests(data.lead_interests || []);
+        // Populate lead interests card - with fallback extraction
+        let interests = data.lead_interests || [];
 
-        // Populate message builder chips with lead data
+        // If lead_interests is empty, extract from content_analysis and profile
+        if (!interests.length) {
+            interests = this.extractInterestsFromData(data);
+        }
+        this.populateLeadInterests(interests);
+
+        // Populate message builder chips with lead data (including extracted interests)
+        data.lead_interests = interests;
         this.populateBuilderChips(data);
 
         // Populate reels and posts carousels separately
@@ -866,6 +873,71 @@ class LeadAnalyzer {
                 <div class="interest-starter">${interest.conversation_starter || 'Explore esse tema na conversa'}</div>
             </div>
         `).join('');
+    }
+
+    // Fallback: Extract interests from profile, bio_analysis and content_analysis
+    extractInterestsFromData(data) {
+        const interests = [];
+        const profile = data.profile || {};
+        const bio = profile.bio || '';
+        const bioAnalysis = data.bio_analysis || '';
+        const contentAnalysis = data.content_analysis || [];
+
+        // Extract from profile category
+        if (profile.category && profile.category !== 'Pessoal') {
+            interests.push({
+                category: 'Profissão',
+                detail: profile.category,
+                conversation_starter: `Percebi que trabalha com ${profile.category.toLowerCase()}, como está o mercado?`
+            });
+        }
+
+        // Parse bio for keywords
+        const bioKeywords = {
+            'médic': { cat: 'Profissão', detail: 'Médico(a)', starter: 'Vi que é da área médica, muito bom!' },
+            'nutrólog': { cat: 'Especialização', detail: 'Nutrologia', starter: 'Gostei do seu trabalho em nutrologia!' },
+            'advogad': { cat: 'Profissão', detail: 'Advogado(a)', starter: 'Vi que atua na área jurídica!' },
+            'coach': { cat: 'Profissão', detail: 'Coach', starter: 'Vi que trabalha com coaching!' },
+            'mentor': { cat: 'Profissão', detail: 'Mentor(a)', starter: 'Vi que é mentor(a), curti!' },
+            'empresári': { cat: 'Profissão', detail: 'Empresário(a)', starter: 'Vi que é empreendedor(a)!' },
+            'palestrante': { cat: 'Atividade', detail: 'Palestrante', starter: 'Vi que é palestrante, onde foi sua última palestra?' },
+            'escritor': { cat: 'Atividade', detail: 'Escritor(a)', starter: 'Vi que escreve, tem algum livro publicado?' },
+            'cristã': { cat: 'Valores', detail: 'Cristã', starter: 'Vi que compartilhamos a fé, muito bom!' },
+            'cristão': { cat: 'Valores', detail: 'Cristão', starter: 'Vi que compartilhamos a fé, muito bom!' },
+            'mãe': { cat: 'Família', detail: 'Mãe', starter: 'Conciliar trabalho e família não é fácil, né?' },
+            'pai': { cat: 'Família', detail: 'Pai', starter: 'Conciliar trabalho e família não é fácil, né?' },
+            'fertil': { cat: 'Especialização', detail: 'Fertilidade', starter: 'Trabalho com fertilidade é muito importante!' },
+            'menopaus': { cat: 'Especialização', detail: 'Menopausa', starter: 'Saúde feminina é um tema cada vez mais relevante!' },
+            'saúde femin': { cat: 'Especialização', detail: 'Saúde Feminina', starter: 'Trabalho com mulheres é muito gratificante!' },
+            'emagrecimento': { cat: 'Especialização', detail: 'Emagrecimento', starter: 'O mercado de emagrecimento está crescendo muito!' },
+            'mounjaro': { cat: 'Conteúdo', detail: 'Tratamentos com Mounjaro', starter: 'Vi seu conteúdo sobre Mounjaro, está bombando!' },
+            'ozempic': { cat: 'Conteúdo', detail: 'Tratamentos com Ozempic', starter: 'Vi seu conteúdo sobre Ozempic!' }
+        };
+
+        const bioLower = bio.toLowerCase();
+        for (const [keyword, info] of Object.entries(bioKeywords)) {
+            if (bioLower.includes(keyword) && !interests.some(i => i.detail === info.detail)) {
+                interests.push({
+                    category: info.cat,
+                    detail: info.detail,
+                    conversation_starter: info.starter
+                });
+            }
+        }
+
+        // Extract from content_analysis (Reels/Posts)
+        for (const content of contentAnalysis.slice(0, 3)) {
+            if (content.theme && !interests.some(i => i.detail?.includes(content.theme))) {
+                interests.push({
+                    category: 'Conteúdo',
+                    detail: content.theme,
+                    conversation_starter: content.opportunity || `Vi seu conteúdo sobre ${content.theme}, muito bom!`
+                });
+            }
+        }
+
+        // Limit to 6 interests max
+        return interests.slice(0, 6);
     }
 
     populateReelsCarousel(posts) {
